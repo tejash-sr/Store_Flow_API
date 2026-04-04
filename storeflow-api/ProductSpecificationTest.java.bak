@@ -1,0 +1,437 @@
+package com.storeflow.storeflow_api.specification;
+
+import com.storeflow.storeflow_api.entity.Category;
+import com.storeflow.storeflow_api.entity.Product;
+import com.storeflow.storeflow_api.repository.ProductRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * Unit tests for ProductSpecification
+ * Tests dynamic query filtering for Products by various criteria
+ */
+@DataJpaTest
+@ActiveProfiles("test")
+class ProductSpecificationTest {
+
+    @Autowired
+    private TestEntityManager entityManager;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    private Category category1;
+    private Category category2;
+    private Product product1;
+    private Product product2;
+    private Product product3;
+    private Product product4;
+
+    @BeforeEach
+    void setUp() {
+        // Create categories
+        category1 = Category.builder()
+                .name("Electronics")
+                .description("Electronic devices")
+                .build();
+        entityManager.persistAndFlush(category1);
+
+        category2 = Category.builder()
+                .name("Books")
+                .description("Books and literature")
+                .build();
+        entityManager.persistAndFlush(category2);
+
+        // Create products
+        product1 = Product.builder()
+                .sku("SKU-001")
+                .name("Laptop")
+                .description("High-end laptop")
+                .price(new BigDecimal("1500.00"))
+                .category(category1)
+                .isActive(true)
+                .build();
+        entityManager.persistAndFlush(product1);
+
+        product2 = Product.builder()
+                .sku("SKU-002")
+                .name("Mouse")
+                .description("Wireless mouse")
+                .price(new BigDecimal("25.00"))
+                .category(category1)
+                .isActive(true)
+                .build();
+        entityManager.persistAndFlush(product2);
+
+        product3 = Product.builder()
+                .sku("SKU-003")
+                .name("Java Programming Book")
+                .description("Learn Java")
+                .price(new BigDecimal("35.00"))
+                .category(category2)
+                .isActive(true)
+                .build();
+        entityManager.persistAndFlush(product3);
+
+        product4 = Product.builder()
+                .sku("SKU-004")
+                .name("Monitor")
+                .description("4K Monitor - Discontinued")
+                .price(new BigDecimal("300.00"))
+                .category(category1)
+                .isActive(false)
+                .build();
+        entityManager.persistAndFlush(product4);
+
+        entityManager.flush();
+    }
+
+    @Test
+    void nameContains_WithValidName_ReturnsMatchingProducts() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.nameContains("Laptop"),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent()).hasSize(1).contains(product1);
+    }
+
+    @Test
+    void nameContains_WithPartialName_ReturnsCaseInsensitiveMatches() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.nameContains("mouse"),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent()).hasSize(1).contains(product2);
+    }
+
+    @Test
+    void nameContains_WithBlankName_ReturnsAll() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.nameContains(""),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent()).hasSize(4);
+    }
+
+    @Test
+    void nameContains_WithNullName_ReturnsAll() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.nameContains(null),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent()).hasSize(4);
+    }
+
+    @Test
+    void categoryIdEquals_WithValidCategoryId_ReturnsMatchingProducts() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.categoryIdEquals(category1.getId()),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent())
+                .hasSize(3)
+                .contains(product1, product2, product4);
+    }
+
+    @Test
+    void categoryIdEquals_WithNullCategoryId_ReturnsAll() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.categoryIdEquals(null),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent()).hasSize(4);
+    }
+
+    @Test
+    void priceInRange_WithValidRange_ReturnsMatchingProducts() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.priceInRange(
+                        new BigDecimal("20.00"),
+                        new BigDecimal("100.00")
+                ),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent())
+                .hasSize(2)
+                .contains(product2, product3);
+    }
+
+    @Test
+    void priceInRange_WithMinPriceOnly_ReturnsProductsAboveMinimum() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.priceInRange(
+                        new BigDecimal("300.00"),
+                        null
+                ),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent())
+                .hasSize(2)
+                .contains(product1, product4);
+    }
+
+    @Test
+    void priceInRange_WithMaxPriceOnly_ReturnsProductsBelowMaximum() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.priceInRange(
+                        null,
+                        new BigDecimal("50.00")
+                ),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent())
+                .hasSize(2)
+                .contains(product2, product3);
+    }
+
+    @Test
+    void priceInRange_WithNullRange_ReturnsAll() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.priceInRange(null, null),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent()).hasSize(4);
+    }
+
+    @Test
+    void isActiveEquals_WithTrueStatus_ReturnsActiveProductsOnly() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.isActiveEquals(true),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent())
+                .hasSize(3)
+                .contains(product1, product2, product3)
+                .doesNotContain(product4);
+    }
+
+    @Test
+    void isActiveEquals_WithFalseStatus_ReturnsInactiveProductsOnly() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.isActiveEquals(false),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent())
+                .hasSize(1)
+                .contains(product4);
+    }
+
+    @Test
+    void isActiveEquals_WithNullStatus_ReturnsAll() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.isActiveEquals(null),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent()).hasSize(4);
+    }
+
+    @Test
+    void isActive_ReturnsOnlyActiveProducts() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.isActive(),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent())
+                .hasSize(3)
+                .contains(product1, product2, product3)
+                .doesNotContain(product4);
+    }
+
+    @Test
+    void withFilters_WithAllCriteria_ReturnsMatchingProducts() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.withFilters(
+                        "mouse",
+                        category1.getId(),
+                        new BigDecimal("20.00"),
+                        new BigDecimal("50.00"),
+                        true
+                ),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent())
+                .hasSize(1)
+                .contains(product2);
+    }
+
+    @Test
+    void withFilters_WithPartialCriteria_ReturnsMatchingProducts() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.withFilters(
+                        null,
+                        category1.getId(),
+                        null,
+                        null,
+                        true
+                ),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent())
+                .hasSize(2)
+                .contains(product1, product2)
+                .doesNotContain(product3, product4);
+    }
+
+    @Test
+    void withFilters_WithNoMatchingCriteria_ReturnsEmpty() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.withFilters(
+                        "NonExistent",
+                        null,
+                        null,
+                        null,
+                        null
+                ),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent()).isEmpty();
+    }
+
+    @Test
+    void withFilters_WithAllNullCriteria_ReturnsAll() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.withFilters(null, null, null, null, null),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent()).hasSize(4);
+    }
+
+    @Test
+    void combineMultipleSpecifications_WithAnd_FiltersCorrectly() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Act
+        var result = productRepository.findAll(
+                ProductSpecification.categoryIdEquals(category1.getId())
+                        .and(ProductSpecification.priceInRange(
+                                new BigDecimal("100.00"),
+                                null
+                        )),
+                pageable
+        );
+
+        // Assert
+        assertThat(result.getContent())
+                .hasSize(2)
+                .contains(product1, product4);
+    }
+}
