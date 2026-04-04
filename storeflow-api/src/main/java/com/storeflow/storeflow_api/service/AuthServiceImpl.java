@@ -4,6 +4,7 @@ import com.storeflow.storeflow_api.dto.*;
 import com.storeflow.storeflow_api.entity.User;
 import com.storeflow.storeflow_api.entity.UserRole;
 import com.storeflow.storeflow_api.entity.UserStatus;
+import com.storeflow.storeflow_api.exception.AuthenticationFailedException;
 import com.storeflow.storeflow_api.repository.UserRepository;
 import com.storeflow.storeflow_api.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -80,6 +81,7 @@ public class AuthServiceImpl implements AuthService {
      * Authenticate user by email and password.
      * Checks if user exists, is active, and password matches.
      * Returns JWT tokens on success.
+     * Throws AuthenticationFailedException (401) if credentials are invalid.
      */
     @Override
     @Transactional(readOnly = true)
@@ -90,13 +92,13 @@ public class AuthServiceImpl implements AuthService {
             UserStatus.ACTIVE
         ).orElseThrow(() -> {
             log.warn("Login failed: user not found or inactive - {}", request.getEmail());
-            return new RuntimeException("Invalid email or password");
+            return new AuthenticationFailedException("Invalid email or password");
         });
 
         // Validate password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             log.warn("Login failed: invalid password - {}", request.getEmail());
-            throw new RuntimeException("Invalid email or password");
+            throw new AuthenticationFailedException("Invalid email or password");
         }
 
         log.info("User logged in successfully: {}", user.getEmail());
