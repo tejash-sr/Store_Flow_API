@@ -1,0 +1,191 @@
+spring:
+  application:
+    name: storeflow-api-production
+  
+  profiles:
+    active: prod
+  
+  # JPA Configuration - Production optimized
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        generate_statistics: false
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+  
+  # DataSource Configuration - Production pool
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/storeflow}
+    username: ${DB_USERNAME:storeflow}
+    password: ${DB_PASSWORD:storeflow123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      auto-commit: true
+  
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+  
+  # Web & CORS - Production restricted
+  web:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:https://storeflow.com}
+      allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+      allowed-headers: Content-Type,Authorization,X-Trace-Id
+      allow-credentials: true
+      max-age: 3600
+  
+  # Mail Configuration - Production SMTP
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+  
+  # Server Configuration - Graceful Shutdown
+  server:
+    shutdown: graceful
+    shutdown-wait-time: 30s
+    tomcat:
+      threads:
+        max: 200
+        min-spare: 10
+      max-connections: 10000
+      accept-count: 50
+      max-http-post-size: 10MB
+  
+  # Compression - Response optimization
+  compression:
+    enabled: true
+    min-response-size: 1024
+    mime-types:
+      - application/json
+      - application/xml
+      - text/html
+      - text/xml
+      - text/plain
+      - text/css
+      - application/javascript
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+
+# Actuator Configuration - Production restricted
+management:
+  server:
+    port: 9090
+    servlet:
+      context-path: /actuator
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+      base-path: /
+  endpoint:
+    health:
+      # Kubernetes probes
+      show-details: when-authorized
+      probes:
+        enabled: true
+      livenessState:
+        enabled: true
+      readinessState:
+        enabled: true
+    info:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    # Disable dangerous endpoints
+    shutdown:
+      enabled: false
+    configprops:
+      enabled: false
+    env:
+      enabled: false
+    beans:
+      enabled: false
+  metrics:
+    enable:
+      tomcat: true
+      logback: true
+      process: true
+      system: true
+      jvm: true
+    export:
+      prometheus:
+        enabled: true
+        step: 1m
+        descriptions: true
+  health:
+    diskspace:
+      enabled: true
+      threshold: 1GB
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+    kafka:
+      enabled: false
+    mail:
+      enabled: true
+
+# Logging Configuration - Production
+logging:
+  level:
+    root: WARN
+    com.storeflow: INFO
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+    org.hibernate: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - [%X{traceId}] %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - [%X{traceId}] %msg%n"
+  file:
+    name: logs/storeflow-api.log
+    max-size: 100MB
+    max-history: 30
+    total-size-cap: 1GB
+
+# Application Configuration
+storeflow:
+  mail:
+    from: ${MAIL_FROM:noreply@storeflow.com}
+    from-name: ${MAIL_FROM_NAME:StoreFlow}
+  frontend:
+    url: ${FRONTEND_URL:https://storeflow.com}
+
+# Environment Indicator
+app:
+  name: StoreFlow API
+  version: 0.8.0
+  environment: production
