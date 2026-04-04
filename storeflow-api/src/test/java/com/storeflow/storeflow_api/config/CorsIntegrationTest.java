@@ -36,7 +36,7 @@ class CorsIntegrationTest {
     @Test
     void shouldRespondOkToHealthCheckWithOriginHeader() throws Exception {
         mockMvc.perform(get("/api/health")
-                .header(HttpHeaders.ORIGIN, "http://example.com"))
+                .header(HttpHeaders.ORIGIN, "http://localhost:4200"))
                 .andExpect(status().isOk());
     }
 }
