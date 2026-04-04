@@ -27,7 +27,6 @@ class CorsIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
-    @WithMockUser(username = "user", roles = "USER")
     void shouldAllowRequestsFromHealthEndpoint() throws Exception {
         mockMvc.perform(get("/api/health")
                 .header(HttpHeaders.ORIGIN, "http://localhost:3000"))
@@ -35,7 +34,6 @@ class CorsIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "user", roles = "USER")
     void shouldRespondOkToHealthCheckWithOriginHeader() throws Exception {
         mockMvc.perform(get("/api/health")
                 .header(HttpHeaders.ORIGIN, "http://example.com"))
