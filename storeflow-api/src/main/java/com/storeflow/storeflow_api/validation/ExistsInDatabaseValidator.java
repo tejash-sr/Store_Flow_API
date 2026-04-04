@@ -16,12 +16,10 @@ import org.springframework.stereotype.Component;
 public class ExistsInDatabaseValidator implements ConstraintValidator<ExistsInDatabase, Object> {
     private final ApplicationContext applicationContext;
     private Class<?> repositoryClass;
-    private String fieldName;
 
     @Override
     public void initialize(ExistsInDatabase constraintAnnotation) {
         this.repositoryClass = constraintAnnotation.repositoryClass();
-        this.fieldName = constraintAnnotation.fieldName();
     }
 
     @Override
@@ -33,12 +31,19 @@ public class ExistsInDatabaseValidator implements ConstraintValidator<ExistsInDa
 
         try {
             // Get the repository bean from application context
-            JpaRepository<?, ?> repository = (JpaRepository<?, ?>) applicationContext.getBean(repositoryClass);
+            Object repositoryBean = applicationContext.getBean(repositoryClass);
             
-            // For now, we'll check if the value exists as an ID
-            // This assumes the repository has findById method (all JpaRepositories do)
-            if (value instanceof Long || value instanceof Integer) {
-                return repository.existsById(Long.valueOf(value.toString()));
+            if (!(repositoryBean instanceof JpaRepository)) {
+                return true;
+            }
+
+            JpaRepository repository = (JpaRepository) repositoryBean;
+            
+            // Check if entity with this ID exists
+            if (value instanceof Long) {
+                return repository.existsById(value);
+            } else if (value instanceof Integer) {
+                return repository.existsById(((Integer) value).longValue());
             }
             
             // For other types, assume valid (graceful fallback)
