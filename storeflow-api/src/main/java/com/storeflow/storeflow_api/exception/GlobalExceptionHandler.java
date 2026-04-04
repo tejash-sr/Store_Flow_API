@@ -1,7 +1,9 @@
 package com.storeflow.storeflow_api.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,81 +12,122 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(
-            ResourceNotFoundException ex,
+    /**
+     * Handle AppException and all subclasses.
+     * Uses the HttpStatus carried by the exception.
+     */
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ErrorResponse> handleAppException(
+            AppException ex,
             WebRequest request) {
-        log.warn("Resource not found: {}", ex.getMessage());
+        log.warn("Application exception: {} - {}", ex.getClass().getSimpleName(), ex.getMessage());
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
-                .status(HttpStatus.NOT_FOUND.value())
-                .error("Not Found")
+                .status(ex.getHttpStatus().value())
+                .error(ex.getHttpStatus().getReasonPhrase())
                 .message(ex.getMessage())
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();
         
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(errorResponse, ex.getHttpStatus());
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(
-            IllegalArgumentException ex,
+    /**
+     * Handle constraint violations from validation on path/query parameters.
+     * Returns 400 Bad Request with field-level errors.
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
+            ConstraintViolationException ex,
             WebRequest request) {
-        log.warn("Illegal argument: {}", ex.getMessage());
+        log.warn("Constraint violation: {}", ex.getMessage());
+        
+        Map<String, String> errors = new HashMap<>();
+        ex.getConstraintViolations().forEach(violation ->
+            errors.put(violation.getPropertyPath().toString(), violation.getMessage())
+        );
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .message("Validation failed")
+                .path(request.getDescription(false).replace("uri=", ""))
+                .errors(errors)
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handle data integrity violations (unique constraints, foreign keys, etc).
+     * Returns 409 Conflict.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex,
+            WebRequest request) {
+        log.warn("Data integrity violation: {}", ex.getMessage());
+        
+        String message = "Data integrity violation occurred";
+        if (ex.getMessage() != null) {
+            if (ex.getMessage().contains("unique constraint")) {
+                message = "A resource with this value already exists (unique constraint)";
+            } else if (ex.getMessage().contains("foreign key")) {
+                message = "Invalid foreign key reference";
+            }
+        }
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.CONFLICT.value())
                 .error("Conflict")
-                .message(ex.getMessage())
+                .message(message)
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();
         
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(
-            RuntimeException ex,
+    /**
+     * Handle JWT and other security-related exceptions.
+     * Returns 401 Unauthorized.
+     */
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(
+            org.springframework.security.core.AuthenticationException ex,
             WebRequest request) {
-        log.error("Runtime exception occurred", ex);
-        
-        // Check for auth-specific errors
-        String message = ex.getMessage() != null ? ex.getMessage() : "";
-        if (message.contains("Invalid email or password")) {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .timestamp(LocalDateTime.now())
-                    .status(HttpStatus.UNAUTHORIZED.value())
-                    .error("Unauthorized")
-                    .message(message)
-                    .path(request.getDescription(false).replace("uri=", ""))
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
-        }
+        log.warn("Authentication exception: {}", ex.getMessage());
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .error("Internal Server Error")
-                .message(message.isEmpty() ? "An unexpected error occurred" : message)
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error("Unauthorized")
+                .message(ex.getMessage() != null ? ex.getMessage() : "Authentication failed")
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();
         
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
+    /**
+     * Catch-all handler for any unhandled exceptions.
+     * Returns 500 Internal Server Error.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex,
             WebRequest request) {
-        log.error("Exception occurred", ex);
+        log.error("Unhandled exception occurred", ex);
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
