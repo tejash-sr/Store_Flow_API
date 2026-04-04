@@ -10,6 +10,7 @@ target/
 uploads/
 test-uploads-*/
 test_output.txt
+test_*.log
 
 ### STS ###
 .apt_generated

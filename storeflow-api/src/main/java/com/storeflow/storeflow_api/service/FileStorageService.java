@@ -1,6 +1,7 @@
 package com.storeflow.storeflow_api.service;
 
 import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,14 +43,68 @@ public class FileStorageService {
     }
 
     /**
-     * Save user avatar file
+     * Save user avatar file with automatic resizing to standard dimensions
      * @param file MultipartFile to save
      * @param userId User ID for file organization
      * @return relative path to saved file
      */
     public String saveUserAvatar(MultipartFile file, String userId) throws IOException {
         validateFile(file);
-        return saveFile(file, "avatars", userId);
+        return saveAndResizeAvatar(file, userId);
+    }
+    
+    /**
+     * Resize user avatar to standard dimensions (150x150px)
+     * @param file MultipartFile to resize
+     * @param userId User ID for file organization
+     * @return relative path to saved file
+     */
+    private String saveAndResizeAvatar(MultipartFile file, String userId) throws IOException {
+        // Create directory structure
+        Path dirPath = Paths.get(baseStoragePath, "avatars", userId);
+        Files.createDirectories(dirPath);
+        
+        // Generate unique filename
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename != null && originalFilename.contains(".") 
+            ? originalFilename.substring(originalFilename.lastIndexOf("."))
+            : ".jpg";
+        String fileName = UUID.randomUUID() + extension;
+        Path filePath = dirPath.resolve(fileName);
+        
+        // Save and resize avatar to 150x150 pixels
+        try {
+            Thumbnails.of(file.getInputStream())
+                .size(150, 150)
+                .keepAspectRatio(true)
+                .outputFormat(getImageFormat(extension))
+                .toFile(filePath.toFile());
+            
+            log.info("Avatar saved and resized: {}/avatars/{}/{}", baseStoragePath, userId, fileName);
+        } catch (IOException e) {
+            log.error("Failed to resize avatar for user {}", userId, e);
+            // Fallback: save original file without resizing
+            Files.write(filePath, file.getBytes());
+        }
+        
+        // Return relative path
+        return String.join("/", "avatars", userId, fileName);
+    }
+    
+    /**
+     * Get image format from file extension
+     * @param extension File extension (e.g., ".jpg", ".png")
+     * @return Image format for Thumbnailator (e.g., "jpg", "png")
+     */
+    private String getImageFormat(String extension) {
+        if (extension == null) {
+            return "jpg";
+        }
+        String ext = extension.toLowerCase().replace(".", "");
+        if ("jpeg".equals(ext)) {
+            return "jpg";
+        }
+        return ext.isEmpty() ? "jpg" : ext;
     }
 
     /**

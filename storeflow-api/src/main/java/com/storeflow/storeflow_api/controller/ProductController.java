@@ -2,6 +2,7 @@ package com.storeflow.storeflow_api.controller;
 
 import com.storeflow.storeflow_api.dto.ProductRequest;
 import com.storeflow.storeflow_api.dto.ProductResponse;
+import com.storeflow.storeflow_api.dto.FileUploadResponse;
 import com.storeflow.storeflow_api.service.ProductService;
 import com.storeflow.storeflow_api.service.FileStorageService;
 import jakarta.validation.Valid;
@@ -113,30 +114,38 @@ public class ProductController {
      * POST /api/products/{id}/image - Upload product image.
      */
     @PostMapping("/{id}/image")
-    public ResponseEntity<?> uploadProductImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<FileUploadResponse> uploadProductImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         try {
             // Verify product exists
             Optional<ProductResponse> product = productService.getProductById(id);
             if (product.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("{ \"error\": \"Product not found\" }");
+                    .body(FileUploadResponse.builder()
+                        .error("Product not found")
+                        .build());
             }
 
             // Save file
             String filePath = fileStorageService.saveProductImage(file, id.toString());
             log.info("Product image uploaded for product {}: {}", id, filePath);
 
-            return ResponseEntity.ok()
-                .body("{ \"message\": \"Image uploaded successfully\", \"filePath\": \"" + filePath + "\" }");
+            return ResponseEntity.ok(FileUploadResponse.builder()
+                .message("Image uploaded successfully")
+                .filePath(filePath)
+                .build());
 
         } catch (IllegalArgumentException e) {
             log.warn("Invalid file for product {}: {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("{ \"error\": \"" + e.getMessage() + "\" }");
+                .body(FileUploadResponse.builder()
+                    .error(e.getMessage())
+                    .build());
         } catch (IOException e) {
             log.error("Failed to upload image for product {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("{ \"error\": \"Failed to upload image\" }");
+                .body(FileUploadResponse.builder()
+                    .error("Failed to upload image")
+                    .build());
         }
     }
 
@@ -150,11 +159,12 @@ public class ProductController {
             Optional<ProductResponse> productOpt = productService.getProductById(id);
             if (productOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("{ \"error\": \"Product not found\" }");
+                    .body(FileUploadResponse.builder()
+                        .error("Product not found")
+                        .build());
             }
 
             // Try to load the most recent image for this product
-            // For now, return a placeholder; in production, you'd track which image is "current"
             String filePath = "products/" + id + "/image.jpg";
             byte[] imageBytes = fileStorageService.loadFile(filePath);
 
@@ -166,7 +176,9 @@ public class ProductController {
         } catch (IOException e) {
             log.warn("Image not found for product {}", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("{ \"error\": \"Image not found\" }");
+                .body(FileUploadResponse.builder()
+                    .error("Image not found")
+                    .build());
         }
     }
 }
