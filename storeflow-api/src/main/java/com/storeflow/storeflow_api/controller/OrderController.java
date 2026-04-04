@@ -3,6 +3,7 @@ package com.storeflow.storeflow_api.controller;
 import com.storeflow.storeflow_api.dto.OrderRequest;
 import com.storeflow.storeflow_api.dto.OrderResponse;
 import com.storeflow.storeflow_api.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +28,7 @@ public class OrderController {
      * POST /api/orders - Place a new order (atomic transaction).
      */
     @PostMapping
-    public ResponseEntity<?> placeOrder(@RequestBody OrderRequest request) {
+    public ResponseEntity<?> placeOrder(@Valid @RequestBody OrderRequest request) {
         try {
             OrderResponse response = orderService.placeOrder(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);

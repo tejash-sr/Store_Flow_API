@@ -3,6 +3,7 @@ package com.storeflow.storeflow_api.controller;
 import com.storeflow.storeflow_api.dto.ProductRequest;
 import com.storeflow.storeflow_api.dto.ProductResponse;
 import com.storeflow.storeflow_api.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +28,7 @@ public class ProductController {
      * POST /api/products - Create a new product.
      */
     @PostMapping
-    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest request) {
+    public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
         ProductResponse response = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -61,7 +62,7 @@ public class ProductController {
      * PUT /api/products/{id} - Update a product (full update).
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductRequest request) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
         try {
             ProductResponse response = productService.updateProduct(id, request);
             return ResponseEntity.ok(response);

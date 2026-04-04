@@ -2,6 +2,7 @@ package com.storeflow.storeflow_api.controller;
 
 import com.storeflow.storeflow_api.dto.*;
 import com.storeflow.storeflow_api.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,7 @@ public class AuthController {
      * @return 201 CREATED with AuthResponse containing JWT tokens
      */
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request) {
+    public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
         log.info("Signup request for email: {}", request.getEmail());
         AuthResponse response = authService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -43,7 +44,7 @@ public class AuthController {
      * @return 200 OK with AuthResponse containing JWT tokens
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         log.info("Login request for email: {}", request.getEmail());
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
@@ -56,7 +57,7 @@ public class AuthController {
      * @return 200 OK with AuthResponse containing new accessToken
      */
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         log.info("Token refresh request");
         AuthResponse response = authService.refresh(request);
         return ResponseEntity.ok(response);
@@ -69,7 +70,7 @@ public class AuthController {
      * @return 202 ACCEPTED with success message
      */
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         log.info("Forgot password request for email: {}", request.getEmail());
         String response = authService.forgotPassword(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
@@ -83,7 +84,7 @@ public class AuthController {
      */
     @PostMapping("/reset-password/{token}")
     public ResponseEntity<String> resetPassword(@PathVariable String token, 
-                                                @RequestBody ResetPasswordRequest request) {
+                                                @Valid @RequestBody ResetPasswordRequest request) {
         log.info("Reset password request with token: {}", token);
         request.setToken(token);
         String response = authService.resetPassword(request);
