@@ -76,6 +76,7 @@ class ProductControllerTest {
             .description("A new test product")
             .sku("NEW001")
             .price(BigDecimal.valueOf(49.99))
+            .stockQuantity(100L)
             .categoryId(testCategory.getId())
             .build();
 
