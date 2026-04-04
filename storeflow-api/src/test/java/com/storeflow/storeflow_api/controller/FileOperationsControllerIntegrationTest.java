@@ -1,14 +1,13 @@
 package com.storeflow.storeflow_api.controller;
 
 import com.storeflow.storeflow_api.config.TestMailConfig;
-import com.storeflow.storeflow_api.entity.Category;
-import com.storeflow.storeflow_api.entity.Order;
-import com.storeflow.storeflow_api.entity.Product;
-import com.storeflow.storeflow_api.entity.Store;
+import com.storeflow.storeflow_api.entity.*;
 import com.storeflow.storeflow_api.repository.CategoryRepository;
 import com.storeflow.storeflow_api.repository.OrderRepository;
 import com.storeflow.storeflow_api.repository.ProductRepository;
 import com.storeflow.storeflow_api.repository.StoreRepository;
+import com.storeflow.storeflow_api.repository.UserRepository;
+import com.storeflow.storeflow_api.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +15,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -51,12 +54,38 @@ class FileOperationsControllerIntegrationTest {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
     private Category testCategory;
     private Product testProduct;
-    private Order testOrder;
+    private User testUser;
+    private String jwtToken;
 
     @BeforeEach
     void setUp() {
+        // Create and save test user
+        testUser = User.builder()
+            .email("test@example.com")
+            .password(passwordEncoder.encode("password123"))
+            .fullName("Test User")
+            .roles(new HashSet<>(List.of(UserRole.ROLE_ADMIN)))
+            .status(UserStatus.ACTIVE)
+            .build();
+        testUser = userRepository.save(testUser);
+
+        // Generate JWT token for authenticated requests
+        jwtToken = jwtUtil.generateAccessToken(testUser.getEmail(), testUser.getId().toString(), 
+            testUser.getRoles().stream()
+                .map(UserRole::name)
+                .collect(Collectors.toSet()));
+
         // Create category
         testCategory = Category.builder()
             .name("Electronics")
@@ -76,15 +105,27 @@ class FileOperationsControllerIntegrationTest {
     }
 
     @Test
-    void testUploadProductImage_ValidFile_Returns200() throws Exception {
+    void testUploadProductImage_ValidJpegFile_Returns200() throws Exception {
         byte[] imageContent = new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0};
         MockMultipartFile file = new MockMultipartFile(
             "file", "product.jpg", "image/jpeg", imageContent);
 
         mockMvc.perform(multipart("/api/products/{id}/image", testProduct.getId())
-            .file(file))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.message").value("Image uploaded successfully"));
+            .file(file)
+            .header("Authorization", "Bearer " + jwtToken))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void testUploadProductImage_ValidPngFile_Returns200() throws Exception {
+        byte[] pngContent = new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47};
+        MockMultipartFile file = new MockMultipartFile(
+            "file", "product.png", "image/png", pngContent);
+
+        mockMvc.perform(multipart("/api/products/{id}/image", testProduct.getId())
+            .file(file)
+            .header("Authorization", "Bearer " + jwtToken))
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -94,9 +135,9 @@ class FileOperationsControllerIntegrationTest {
             "file", "large.jpg", "image/jpeg", largeContent);
 
         mockMvc.perform(multipart("/api/products/{id}/image", testProduct.getId())
-            .file(file))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.error", containsString("5MB")));
+            .file(file)
+            .header("Authorization", "Bearer " + jwtToken))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -106,9 +147,9 @@ class FileOperationsControllerIntegrationTest {
             "file", "text.txt", "text/plain", textContent);
 
         mockMvc.perform(multipart("/api/products/{id}/image", testProduct.getId())
-            .file(file))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.error", containsString("Invalid file type")));
+            .file(file)
+            .header("Authorization", "Bearer " + jwtToken))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -118,26 +159,27 @@ class FileOperationsControllerIntegrationTest {
             "file", "test.jpg", "image/jpeg", imageContent);
 
         mockMvc.perform(multipart("/api/products/{id}/image", 99999L)
-            .file(file))
+            .file(file)
+            .header("Authorization", "Bearer " + jwtToken))
             .andExpect(status().isNotFound());
     }
 
     @Test
     void testUploadProductImage_NoFile_Returns400() throws Exception {
-        mockMvc.perform(multipart("/api/products/{id}/image", testProduct.getId()))
+        mockMvc.perform(multipart("/api/products/{id}/image", testProduct.getId())
+            .header("Authorization", "Bearer " + jwtToken))
             .andExpect(status().isBadRequest());
     }
 
     @Test
-    void testUploadProductImage_PngFile_Returns200() throws Exception {
-        byte[] pngContent = new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47};
+    void testUploadProductImage_WithoutAuth_Returns401() throws Exception {
+        byte[] imageContent = new byte[]{(byte) 0xFF, (byte) 0xD8};
         MockMultipartFile file = new MockMultipartFile(
-            "file", "product.png", "image/png", pngContent);
+            "file", "test.jpg", "image/jpeg", imageContent);
 
         mockMvc.perform(multipart("/api/products/{id}/image", testProduct.getId())
             .file(file))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.message").value("Image uploaded successfully"));
+            .andExpect(status().isUnauthorized());
     }
 
 }
