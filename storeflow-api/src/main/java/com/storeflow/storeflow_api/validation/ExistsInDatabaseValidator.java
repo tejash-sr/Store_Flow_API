@@ -3,6 +3,7 @@ package com.storeflow.storeflow_api.validation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ExistsInDatabaseValidator implements ConstraintValidator<ExistsInDatabase, Object> {
     private final ApplicationContext applicationContext;
     private Class<?> repositoryClass;
@@ -34,6 +36,7 @@ public class ExistsInDatabaseValidator implements ConstraintValidator<ExistsInDa
             Object repositoryBean = applicationContext.getBean(repositoryClass);
             
             if (!(repositoryBean instanceof JpaRepository)) {
+                // If it's not a JpaRepository, assume valid
                 return true;
             }
 
@@ -41,9 +44,22 @@ public class ExistsInDatabaseValidator implements ConstraintValidator<ExistsInDa
             
             // Check if entity with this ID exists
             if (value instanceof Long) {
-                return repository.existsById(value);
+                boolean exists = repository.existsById(value);
+                if (!exists && context != null) {
+                    // Add helpful error message
+                    context.disableDefaultConstraintViolation();
+                    context.buildConstraintViolationWithTemplate("Entity with this ID does not exist")
+                        .addConstraintViolation();
+                }
+                return exists;
             } else if (value instanceof Integer) {
-                return repository.existsById(((Integer) value).longValue());
+                boolean exists = repository.existsById(((Integer) value).longValue());
+                if (!exists && context != null) {
+                    context.disableDefaultConstraintViolation();
+                    context.buildConstraintViolationWithTemplate("Entity with this ID does not exist")
+                        .addConstraintViolation();
+                }
+                return exists;
             }
             
             // For other types, assume valid (graceful fallback)
@@ -51,6 +67,7 @@ public class ExistsInDatabaseValidator implements ConstraintValidator<ExistsInDa
         } catch (Exception e) {
             // If repository not found or error occurs, be lenient and return true
             // Errors will be caught at service layer
+            log.warn("Validation error in @ExistsInDatabase: {}, allowing validation to pass", e.getMessage());
             return true;
         }
     }
