@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -68,4 +70,22 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      */
     @Query(value = "SELECT o FROM Order o ORDER BY o.createdAt DESC", nativeQuery = false)
     List<Order> findRecentOrders();
+
+    /**
+     * Count orders created within date range.
+     */
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.createdAt BETWEEN :startDate AND :endDate")
+    long countOrdersByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * Sum total revenue from orders created within date range.
+     */
+    @Query("SELECT COALESCE(SUM(o.total), 0) FROM Order o WHERE o.createdAt BETWEEN :startDate AND :endDate")
+    BigDecimal sumRevenueByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * Count pending orders created before a specific date.
+     */
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.status = 'PENDING' AND o.createdAt < :date")
+    long countPendingOrdersBeforeDate(@Param("date") LocalDateTime date);
 }
