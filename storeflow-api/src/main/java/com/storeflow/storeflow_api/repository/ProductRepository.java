@@ -2,6 +2,7 @@ package com.storeflow.storeflow_api.repository;
 
 import com.storeflow.storeflow_api.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -14,7 +15,7 @@ import java.util.Optional;
  * Repository for Product entity providing data access operations.
  */
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     /**
      * Find product by SKU.
