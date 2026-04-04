@@ -117,7 +117,11 @@ class ProductControllerTest {
     void testUpdateProductSuccess() throws Exception {
         ProductRequest updateRequest = ProductRequest.builder()
             .name("Updated Product")
+            .description("Updated description")
+            .sku("UPD001")
             .price(BigDecimal.valueOf(129.99))
+            .stockQuantity(50L)
+            .categoryId(testCategory.getId())
             .build();
 
         mockMvc.perform(put("/api/products/" + testProduct.getId())
