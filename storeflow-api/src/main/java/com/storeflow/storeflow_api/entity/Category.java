@@ -40,6 +40,7 @@ public class Category {
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
+    @Builder.Default
     private List<Product> products = new ArrayList<>();
 
     @CreationTimestamp
