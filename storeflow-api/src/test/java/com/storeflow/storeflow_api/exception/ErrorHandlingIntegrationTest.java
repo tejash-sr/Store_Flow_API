@@ -1,10 +1,13 @@
 package com.storeflow.storeflow_api.exception;
 
+import com.storeflow.storeflow_api.config.TestMailConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -18,12 +21,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(TestMailConfig.class)
 class ErrorHandlingIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     void shouldReturn404ForNonexistentApiRoute() throws Exception {
         mockMvc.perform(get("/api/nonexistent")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -31,6 +36,7 @@ class ErrorHandlingIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     void shouldReturn404StatusCodeForInvalidPath() throws Exception {
         mockMvc.perform(get("/invalid/path")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -38,6 +44,7 @@ class ErrorHandlingIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     void shouldConsistentlyReturn404ForUnmatchedRoutes() throws Exception {
         mockMvc.perform(get("/some/random/unmapped/endpoint"))
                 .andExpect(status().isNotFound());

@@ -1,6 +1,7 @@
 package com.storeflow.storeflow_api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.storeflow.storeflow_api.config.TestMailConfig;
 import com.storeflow.storeflow_api.dto.ProductRequest;
 import com.storeflow.storeflow_api.entity.Category;
 import com.storeflow.storeflow_api.entity.Product;
@@ -11,7 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(TestMailConfig.class)
 @Transactional
 class ProductControllerTest {
 
@@ -65,6 +69,7 @@ class ProductControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     void testCreateProductSuccess() throws Exception {
         ProductRequest request = ProductRequest.builder()
             .name("New Product")
@@ -91,6 +96,7 @@ class ProductControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     void testGetProductByIdSuccess() throws Exception {
         mockMvc.perform(get("/api/products/" + testProduct.getId())
             .contentType(MediaType.APPLICATION_JSON))
@@ -99,6 +105,7 @@ class ProductControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     void testGetProductByIdNotFound() throws Exception {
         mockMvc.perform(get("/api/products/99999")
             .contentType(MediaType.APPLICATION_JSON))
@@ -106,6 +113,7 @@ class ProductControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     void testUpdateProductSuccess() throws Exception {
         ProductRequest updateRequest = ProductRequest.builder()
             .name("Updated Product")
@@ -121,6 +129,7 @@ class ProductControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     void testDeleteProductSuccess() throws Exception {
         mockMvc.perform(delete("/api/products/" + testProduct.getId())
             .contentType(MediaType.APPLICATION_JSON))
@@ -133,6 +142,7 @@ class ProductControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
     void testAdjustStockSuccess() throws Exception {
         mockMvc.perform(patch("/api/products/" + testProduct.getId() + "/stock?quantity=10")
             .contentType(MediaType.APPLICATION_JSON))

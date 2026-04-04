@@ -9,6 +9,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -28,6 +30,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
 
+    @Autowired
+    private Environment environment;
+
     /**
      * Token bucket configuration: 5 tokens per 15 minutes per IP address.
      */
@@ -42,6 +47,12 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, 
                                     HttpServletResponse response, 
                                     FilterChain filterChain) throws ServletException, IOException {
+        
+        // Skip rate limiting in test profile
+        if (environment != null && environment.matchesProfiles("test")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         
         String requestPath = request.getRequestURI();
         

@@ -1,6 +1,7 @@
 package com.storeflow.storeflow_api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.storeflow.storeflow_api.config.TestMailConfig;
 import com.storeflow.storeflow_api.dto.OrderItemRequest;
 import com.storeflow.storeflow_api.dto.OrderRequest;
 import com.storeflow.storeflow_api.entity.Category;
@@ -15,7 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(TestMailConfig.class)
 @Transactional
 class OrderControllerTest {
 
@@ -87,6 +91,7 @@ class OrderControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", roles = "USER")
     void testPlaceOrderSuccess() throws Exception {
         OrderRequest request = OrderRequest.builder()
             .customerId(1L)
@@ -107,6 +112,7 @@ class OrderControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", roles = "USER")
     void testPlaceOrderEmptyItems() throws Exception {
         OrderRequest request = OrderRequest.builder()
             .customerId(1L)
@@ -120,6 +126,7 @@ class OrderControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", roles = "USER")
     void testPlaceOrderProductNotFound() throws Exception {
         OrderRequest request = OrderRequest.builder()
             .customerId(1L)
@@ -138,6 +145,7 @@ class OrderControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", roles = "USER")
     void testGetAllOrders() throws Exception {
         mockMvc.perform(get("/api/orders")
             .contentType(MediaType.APPLICATION_JSON))
@@ -172,6 +180,7 @@ class OrderControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", roles = "USER")
     void testGetOrderByIdNotFound() throws Exception {
         mockMvc.perform(get("/api/orders/99999")
             .contentType(MediaType.APPLICATION_JSON))
