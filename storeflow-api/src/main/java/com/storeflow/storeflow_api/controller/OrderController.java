@@ -2,15 +2,26 @@ package com.storeflow.storeflow_api.controller;
 
 import com.storeflow.storeflow_api.dto.OrderRequest;
 import com.storeflow.storeflow_api.dto.OrderResponse;
+import com.storeflow.storeflow_api.entity.Order;
 import com.storeflow.storeflow_api.service.OrderService;
+import com.storeflow.storeflow_api.service.PdfGenerationService;
+import com.storeflow.storeflow_api.service.CsvExportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -20,9 +31,12 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
+@Slf4j
 public class OrderController {
 
     private final OrderService orderService;
+    private final PdfGenerationService pdfGenerationService;
+    private final CsvExportService csvExportService;
 
     /**
      * POST /api/orders - Place a new order (atomic transaction).
@@ -71,6 +85,72 @@ public class OrderController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("{ \"error\": \"" + e.getMessage() + "\" }");
+        }
+    }
+
+    /**
+     * GET /api/orders/{id}/report - Generate PDF report for an order.
+     */
+    @GetMapping("/{id}/report")
+    public ResponseEntity<?> getOrderReport(@PathVariable Long id) {
+        try {
+            Optional<OrderResponse> orderOpt = orderService.getOrderById(id);
+            if (orderOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("{ \"error\": \"Order not found\" }");
+            }
+
+            // Fetch full Order entity (with items)
+            Order order = orderService.getOrderEntityById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+            // Generate PDF
+            byte[] pdfBytes = pdfGenerationService.generateOrderReport(order);
+            log.info("PDF report generated for order {}", id);
+
+            return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"order-" + order.getOrderNumber() + ".pdf\"")
+                .body(new ByteArrayResource(pdfBytes));
+
+        } catch (IOException e) {
+            log.error("Failed to generate PDF for order {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("{ \"error\": \"Failed to generate PDF\" }");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("{ \"error\": \"" + e.getMessage() + "\" }");
+        }
+    }
+
+    /**
+     * GET /api/orders/export - Export orders as CSV (optionally filtered by date range).
+     */
+    @GetMapping("/export")
+    public ResponseEntity<?> exportOrdersAsCsv(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to) {
+        try {
+            List<Order> orders = orderService.getAllOrdersForExport();
+
+            byte[] csvBytes;
+            if (from != null && to != null) {
+                csvBytes = csvExportService.generateOrdersCsvWithDateFilter(orders, from, to);
+            } else {
+                csvBytes = csvExportService.generateOrdersCsv(orders);
+            }
+
+            log.info("CSV export generated for {} orders", orders.size());
+
+            return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"orders-export.csv\"")
+                .body(new ByteArrayResource(csvBytes));
+
+        } catch (IOException e) {
+            log.error("Failed to generate CSV export", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("{ \"error\": \"Failed to generate CSV export\" }");
         }
     }
 }

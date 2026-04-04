@@ -6,6 +6,12 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# File uploads and storage
+uploads/
+test-uploads-*/
+test_output.txt
+test_*.log
+
 ### STS ###
 .apt_generated
 .classpath
