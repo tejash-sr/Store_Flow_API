@@ -1,10 +1,12 @@
 package com.storeflow.storeflow_api.repository;
 
+import com.storeflow.storeflow_api.config.TestMailConfig;
 import com.storeflow.storeflow_api.entity.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestMailConfig.class)
 @Transactional
 class OrderRepositoryTest {
 
