@@ -1,8 +1,11 @@
 package com.storeflow.storeflow_api.dto;
 
-import com.storeflow.storeflow_api.repository.CategoryRepository;
-import com.storeflow.storeflow_api.validation.ExistsInDatabase;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,7 +42,6 @@ public class ProductRequest {
     private Long stockQuantity;
 
     @NotNull(message = "Category ID is required")
-    @ExistsInDatabase(repositoryClass = CategoryRepository.class, message = "Category with this ID does not exist")
     private Long categoryId;
 
     private String imageUrl;
