@@ -1,5 +1,6 @@
 # Help and standard files
 HELP.md
+docs/
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

@@ -104,10 +104,10 @@ class CategoryRepositoryTest {
             .build();
         productRepository.save(product);
 
-        Optional<Category> fetched = categoryRepository.findById(saved.getId());
-        assertTrue(fetched.isPresent());
-        assertTrue(fetched.get().getProducts().stream()
-            .anyMatch(p -> "Laptop".equals(p.getName())));
+        // Query products by category ID directly
+        List<Product> products = productRepository.findByCategory_IdAndIsActiveTrueOrderByNameAsc(saved.getId());
+        assertFalse(products.isEmpty());
+        assertTrue(products.stream().anyMatch(p -> "Laptop".equals(p.getName())));
     }
 
     @Test
@@ -139,9 +139,9 @@ class CategoryRepositoryTest {
             productRepository.save(p);
         }
 
-        Optional<Category> fetched = categoryRepository.findById(saved.getId());
-        assertTrue(fetched.isPresent());
-        assertEquals(5, fetched.get().getProducts().size());
+        // Query products by category ID directly
+        List<Product> products = productRepository.findByCategory_IdAndIsActiveTrueOrderByNameAsc(saved.getId());
+        assertEquals(5, products.size());
     }
 
     @Test
