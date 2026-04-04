@@ -104,6 +104,18 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Optional<Order> getOrderEntityById(Long id) {
+        return orderRepository.findById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Order> getAllOrdersForExport() {
+        return orderRepository.findAll();
+    }
+
+    @Override
     public OrderResponse updateOrderStatus(Long id, String newStatusStr) {
         Order order = orderRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Order not found"));
