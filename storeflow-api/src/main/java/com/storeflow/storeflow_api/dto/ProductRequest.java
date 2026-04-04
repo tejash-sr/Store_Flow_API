@@ -1,5 +1,6 @@
 package com.storeflow.storeflow_api.dto;
 
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,11 +17,27 @@ import java.math.BigDecimal;
 @Builder
 public class ProductRequest {
 
+    @NotBlank(message = "Product name is required")
+    @Size(min = 3, max = 150, message = "Product name must be between 3 and 150 characters")
     private String name;
+
+    @Size(max = 3000, message = "Description cannot exceed 3000 characters")
     private String description;
+
+    @NotBlank(message = "Product SKU is required")
+    @Pattern(regexp = "^[A-Z0-9-]+$", message = "SKU must contain only uppercase letters, numbers, and hyphens")
     private String sku;
+
+    @NotNull(message = "Product price is required")
+    @DecimalMin(value = "0.01", message = "Product price must be positive")
     private BigDecimal price;
+
+    @NotNull(message = "Stock quantity is required")
+    @Min(value = 0, message = "Stock quantity cannot be negative")
     private Long stockQuantity;
-    private Long categoryId;
+
+    @NotNull(message = "Category ID is required")
+    private Long categoryId; // Validation of existence done in service layer
+
     private String imageUrl;
 }
