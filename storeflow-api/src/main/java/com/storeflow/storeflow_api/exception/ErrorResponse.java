@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 @Builder
@@ -19,4 +20,10 @@ public class ErrorResponse {
     private String error;
     private String message;
     private String path;
+
+    /**
+     * Field-level validation errors from MethodArgumentNotValidException.
+     * Maps field names to error messages.
+     */
+    private Map<String, String> errors;
 }
