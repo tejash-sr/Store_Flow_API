@@ -30,7 +30,7 @@ public class ProductRequest {
     private String description;
 
     @NotBlank(message = "SKU is required")
-    @Pattern(regexp = "^[A-Z0-9-]+$", message = "SKU must contain only uppercase letters, numbers, and hyphens")
+    @Size(min = 1, max = 100, message = "SKU must be between 1 and 100 characters")
     private String sku;
 
     @NotNull(message = "Price is required")
