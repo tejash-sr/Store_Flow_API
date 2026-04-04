@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,6 +63,13 @@ public class ProductServiceImpl implements ProductService {
         List<ProductResponse> pageContent = responses.subList(start, end);
 
         return new PageImpl<>(pageContent, pageable, responses.size());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> searchProducts(Specification<Product> spec, Pageable pageable) {
+        Page<Product> products = productRepository.findAll(spec, pageable);
+        return products.map(this::toResponse);
     }
 
     @Override
