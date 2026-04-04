@@ -16,8 +16,44 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baselineOnMigrate: true
+  
+  # Mail Configuration - Test (using Greenmail mock)
+  mail:
+    host: localhost
+    port: 3025
+    username: test
+    password: test
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
 
 logging:
   level:
     root: WARN
     com.storeflow: INFO
+    org.springframework.test: WARN
+
+# Actuator Configuration - Test environment
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Application Configuration - Test
+storeflow:
+  mail:
+    from: test@storeflow.local
+    from-name: StoreFlow Test
+  frontend:
+    url: http://localhost:3000
+
