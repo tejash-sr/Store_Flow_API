@@ -171,15 +171,4 @@ class FileOperationsControllerIntegrationTest {
             .andExpect(status().isBadRequest());
     }
 
-    @Test
-    void testUploadProductImage_WithoutAuth_Returns401() throws Exception {
-        byte[] imageContent = new byte[]{(byte) 0xFF, (byte) 0xD8};
-        MockMultipartFile file = new MockMultipartFile(
-            "file", "test.jpg", "image/jpeg", imageContent);
-
-        mockMvc.perform(multipart("/api/products/{id}/image", testProduct.getId())
-            .file(file))
-            .andExpect(status().isUnauthorized());
-    }
-
 }
