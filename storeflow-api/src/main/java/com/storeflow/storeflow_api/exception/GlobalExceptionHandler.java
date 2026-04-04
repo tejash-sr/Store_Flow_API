@@ -69,29 +69,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Handle data integrity violations (unique constraints, foreign keys, etc).
+     * Handle IllegalArgumentException (duplicate email, invalid input, etc).
      * Returns 409 Conflict.
      */
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
-            DataIntegrityViolationException ex,
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(
+            IllegalArgumentException ex,
             WebRequest request) {
-        log.warn("Data integrity violation: {}", ex.getMessage());
-        
-        String message = "Data integrity violation occurred";
-        if (ex.getMessage() != null) {
-            if (ex.getMessage().contains("unique constraint")) {
-                message = "A resource with this value already exists (unique constraint)";
-            } else if (ex.getMessage().contains("foreign key")) {
-                message = "Invalid foreign key reference";
-            }
-        }
+        log.warn("Illegal argument: {}", ex.getMessage());
         
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.CONFLICT.value())
                 .error("Conflict")
-                .message(message)
+                .message(ex.getMessage() != null ? ex.getMessage() : "Invalid argument provided")
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();
         
