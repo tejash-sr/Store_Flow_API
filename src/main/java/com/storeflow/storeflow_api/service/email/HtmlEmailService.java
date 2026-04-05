@@ -33,9 +33,9 @@ import java.util.List;
  * @version 1.0
  */
 @Slf4j
-@Service
+@Service("htmlEmailService")
 @RequiredArgsConstructor
-public class EmailService {
+public class HtmlEmailService {
 
     private final JavaMailSender mailSender;
 

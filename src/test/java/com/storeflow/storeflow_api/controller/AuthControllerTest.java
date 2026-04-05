@@ -272,23 +272,39 @@ public class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("Rate limiting returns 429 on 6th signup request within 15 minutes")
-    void rateLimit_exceededRequests_returns429() throws Exception {
-        // Note: Rate limiting is disabled in test profile for test execution
-        // In test profile, all requests succeed. In production, 6th+ requests return 429.
-        // Make 6 successful requests (all pass in test profile, last one would be rate-limited in prod)
-        for (int i = 0; i < 6; i++) {
-            SignupRequest request = SignupRequest.builder()
-                .email("user" + i + "@test.com")
-                .password("Password123!")
-                .fullName("User " + i)
-                .build();
+    @DisplayName("Rate limiting: 6th request in test profile passes (bypassed)")
+    void rateLimit_testProfileBypassesRateLimit() throws Exception {
+        // Rate limiting is disabled in test profile (see RateLimitingFilter)
+        // This test documents that behaviour explicitly
+        SignupRequest request = SignupRequest.builder()
+            .email("rateLimitTest@test.com")
+            .password("Password123!").fullName("Rate Test").build();
+        
+        mockMvc.perform(post("/api/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated());
+    }
 
-            mockMvc.perform(post("/api/auth/signup")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated()); // In test profile, all requests succeed
+    @Test
+    @DisplayName("RateLimitingFilter: returns 429 after 5 requests for same IP")
+    void rateLimitFilter_after5Requests_returns429() throws Exception {
+        com.storeflow.storeflow_api.security.RateLimitingFilter filter = new com.storeflow.storeflow_api.security.RateLimitingFilter();
+        org.springframework.mock.web.MockHttpServletRequest req = new org.springframework.mock.web.MockHttpServletRequest();
+        org.springframework.mock.web.MockHttpServletResponse res = new org.springframework.mock.web.MockHttpServletResponse();
+        jakarta.servlet.FilterChain chain = (r, s) -> {};
+        
+        req.setRequestURI("/api/auth/signup");
+        req.setRemoteAddr("192.168.1.1");
+        
+        for (int i = 0; i < 5; i++) {
+            filter.doFilter(req, res, chain);
+            org.assertj.core.api.Assertions.assertThat(res.getStatus()).isNotEqualTo(429);
         }
+        
+        // 6th request
+        filter.doFilter(req, res, chain);
+        org.assertj.core.api.Assertions.assertThat(res.getStatus()).isEqualTo(429);
     }
 
     // ============ HELPER METHODS ============

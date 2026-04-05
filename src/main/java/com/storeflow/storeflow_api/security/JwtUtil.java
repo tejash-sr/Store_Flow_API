@@ -10,6 +10,8 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import jakarta.annotation.PostConstruct;
+
 /**
  * Utility class for JWT token generation, validation, and claim extraction.
  * Handles both access tokens (short-lived) and refresh tokens (long-lived).
@@ -18,7 +20,7 @@ import java.util.*;
 @Slf4j
 public class JwtUtil {
 
-    @Value("${jwt.secret:your-super-secret-key-minimum-256-bits-long-for-HS256-algorithm}")
+    @Value("${jwt.secret}")
     private String secretKey;
 
     @Value("${jwt.accessTokenExpiration:3600000}") // 1 hour default
@@ -26,6 +28,13 @@ public class JwtUtil {
 
     @Value("${jwt.refreshTokenExpiration:604800000}") // 7 days default
     private Long refreshTokenExpiration;
+
+    @PostConstruct
+    public void validateConfig() {
+        if (secretKey == null || secretKey.length() < 32) {
+            throw new IllegalStateException("JWT secret must be set and at least 32 chars");
+        }
+    }
 
     /**
      * Generate JWT access token for authenticated user.

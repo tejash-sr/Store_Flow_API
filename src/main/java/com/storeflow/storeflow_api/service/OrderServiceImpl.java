@@ -23,6 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.storeflow.storeflow_api.repository.UserRepository;
+import com.storeflow.storeflow_api.entity.User;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 
 /**
  * Implementation of OrderService with atomic transaction handling.
@@ -35,17 +39,25 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
+    private final UserRepository userRepository;
 
     @Override
     public OrderResponse placeOrder(OrderRequest request) {
         // Atomic transaction: validate all items first, then deduct stock
         validateOrder(request);
 
+        User currentUser = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            String email = authentication.getName();
+            currentUser = userRepository.findByEmailIgnoreCase(email).orElse(null);
+        }
+
         // Get default store for order (TODO: support store selection in Phase 4)
-        Store store = storeRepository.findAll().isEmpty() 
-            ? null 
+        Store store = storeRepository.findAll().isEmpty()
+            ? null
             : storeRepository.findAll().get(0);
-        
+
         if (store == null) {
             throw new IllegalArgumentException("No store found");
         }
@@ -54,6 +66,10 @@ public class OrderServiceImpl implements OrderService {
         Order order = Order.builder()
             .orderNumber(generateOrderNumber())
             .store(store)
+            .customer(currentUser)
+            .customerName(currentUser != null ? currentUser.getFullName() : null)
+            .customerEmail(currentUser != null ? currentUser.getEmail() : null)
+            .customerPhone(currentUser != null ? currentUser.getPhoneNumber() : null)
             .status(OrderStatus.PENDING)
             .subtotal(BigDecimal.ZERO)
             .tax(BigDecimal.ZERO)
@@ -184,9 +200,9 @@ public class OrderServiceImpl implements OrderService {
         return OrderResponse.builder()
             .id(order.getId())
             .referenceNumber(order.getOrderNumber())
-            .customerId(null)
-            .customer(null)
-            .customerName(order.getCustomerName() != null ? order.getCustomerName() : "Customer")
+            .customerId(order.getCustomer() != null ? order.getCustomer().getId() : null)
+            .customer(order.getCustomer())
+            .customerName(order.getCustomer() != null ? order.getCustomer().getFullName() : (order.getCustomerName() != null ? order.getCustomerName() : "Customer"))
             .status(order.getStatus().name())
             .totalAmount(order.getTotal())
             .items(items)

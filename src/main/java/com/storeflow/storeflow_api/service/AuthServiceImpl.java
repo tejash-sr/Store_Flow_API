@@ -29,6 +29,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    
+    @org.springframework.beans.factory.annotation.Qualifier("primaryEmailService")
     private final EmailService emailService;
 
     /**
