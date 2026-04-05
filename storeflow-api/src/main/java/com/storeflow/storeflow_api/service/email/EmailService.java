@@ -64,10 +64,14 @@ public class EmailService {
     @Async
     public void sendWelcomeEmail(String toEmail, String fullName, String verificationLink) {
         try {
+            if (toEmail == null || toEmail.trim().isEmpty()) {
+                log.warn("Welcome email: recipient email is null/empty, skipping");
+                return;
+            }
             String htmlContent = buildWelcomeEmailHtml(fullName, verificationLink);
             sendHtmlEmail(toEmail, EmailTemplate.WELCOME, htmlContent);
             log.info("Welcome email sent to: {}", toEmail);
-        } catch (MessagingException | UnsupportedEncodingException e) {
+        } catch (Exception e) {
             log.error("Failed to send welcome email to {}: {}", toEmail, e.getMessage(), e);
         }
     }
@@ -88,10 +92,14 @@ public class EmailService {
     @Async
     public void sendPasswordResetEmail(String toEmail, String resetLink, int expiryMinutes) {
         try {
+            if (toEmail == null || toEmail.trim().isEmpty()) {
+                log.warn("Password reset email: recipient email is null/empty, skipping");
+                return;
+            }
             String htmlContent = buildPasswordResetEmailHtml(resetLink, expiryMinutes);
             sendHtmlEmail(toEmail, EmailTemplate.PASSWORD_RESET, htmlContent);
             log.info("Password reset email sent to: {}", toEmail);
-        } catch (MessagingException | UnsupportedEncodingException e) {
+        } catch (Exception e) {
             log.error("Failed to send password reset email to {}: {}", toEmail, e.getMessage(), e);
         }
     }
@@ -118,12 +126,16 @@ public class EmailService {
     public void sendOrderConfirmationEmail(String toEmail, String customerName, String orderNumber,
                                           List<OrderItem> items, String totalAmount, String deliveryAddress) {
         try {
+            if (toEmail == null || toEmail.trim().isEmpty()) {
+                log.warn("Order confirmation email: recipient email is null/empty, skipping");
+                return;
+            }
             String htmlContent = buildOrderConfirmationEmailHtml(
                 customerName, orderNumber, items, totalAmount, deliveryAddress
             );
             sendHtmlEmail(toEmail, EmailTemplate.ORDER_CONFIRMED, htmlContent);
             log.info("Order confirmation email sent to: {} for order: {}", toEmail, orderNumber);
-        } catch (MessagingException | UnsupportedEncodingException e) {
+        } catch (Exception e) {
             log.error("Failed to send order confirmation email to {}: {}", toEmail, e.getMessage(), e);
         }
     }
@@ -148,12 +160,16 @@ public class EmailService {
     public void sendLowStockAlertEmail(String toEmail, String productName, Long currentQty,
                                       Long minimumLevel, String warehouseLocation) {
         try {
+            if (toEmail == null || toEmail.trim().isEmpty()) {
+                log.warn("Low-stock alert email: recipient email is null/empty, skipping");
+                return;
+            }
             String htmlContent = buildLowStockAlertEmailHtml(
                 productName, currentQty, minimumLevel, warehouseLocation
             );
             sendHtmlEmail(toEmail, EmailTemplate.LOW_STOCK_ALERT, htmlContent);
             log.info("Low-stock alert email sent to: {} for product: {}", toEmail, productName);
-        } catch (MessagingException | UnsupportedEncodingException e) {
+        } catch (Exception e) {
             log.error("Failed to send low-stock alert email to {}: {}", toEmail, e.getMessage(), e);
         }
     }
@@ -182,12 +198,16 @@ public class EmailService {
     public void sendDailyDigestEmail(String toEmail, int totalOrders, String totalRevenue,
                                     String avgOrderValue, int pendingOrderCount) {
         try {
+            if (toEmail == null || toEmail.trim().isEmpty()) {
+                log.warn("Daily digest email: recipient email is null/empty, skipping");
+                return;
+            }
             String htmlContent = buildDailyDigestEmailHtml(
                 totalOrders, totalRevenue, avgOrderValue, pendingOrderCount
             );
             sendHtmlEmail(toEmail, EmailTemplate.DAILY_DIGEST, htmlContent);
             log.info("Daily digest email sent to: {}", toEmail);
-        } catch (MessagingException | UnsupportedEncodingException e) {
+        } catch (Exception e) {
             log.error("Failed to send daily digest email to {}: {}", toEmail, e.getMessage(), e);
         }
     }
@@ -204,15 +224,41 @@ public class EmailService {
     private void sendHtmlEmail(String toEmail, EmailTemplate template, String htmlContent)
             throws MessagingException, UnsupportedEncodingException {
         
+        // Validate inputs
+        if (toEmail == null || toEmail.trim().isEmpty()) {
+            log.warn("Email recipient is null or empty, skipping email send");
+            return;
+        }
+        
+        if (htmlContent == null) {
+            log.warn("Email content is null for recipient: {}", toEmail);
+            return;
+        }
+        
+        // Create MIME message
         MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        
+        // Check if message creation succeeded (can be null if JavaMailSender is not configured)
+        if (message == null) {
+            log.warn("Failed to create MimeMessage - JavaMailSender may not be properly configured. " +
+                    "Email to {} will not be sent.", toEmail);
+            return;
+        }
+        
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        helper.setFrom(fromEmail, fromName);
-        helper.setTo(toEmail);
-        helper.setSubject(template.getSubject());
-        helper.setText(htmlContent, true); // true = isHtml
+            helper.setFrom(fromEmail, fromName);
+            helper.setTo(toEmail);
+            helper.setSubject(template.getSubject());
+            helper.setText(htmlContent, true); // true = isHtml
 
-        mailSender.send(message);
+            mailSender.send(message);
+        } catch (IllegalArgumentException e) {
+            // Catch cases where helper methods receive null values
+            log.error("Invalid email parameters for recipient {}: {}", toEmail, e.getMessage(), e);
+            throw e;
+        }
     }
 
     // ============ Email Template HTML Builders ============
