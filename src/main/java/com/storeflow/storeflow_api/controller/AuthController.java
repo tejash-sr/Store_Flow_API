@@ -1,5 +1,9 @@
 package com.storeflow.storeflow_api.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.storeflow.storeflow_api.dto.*;
 import com.storeflow.storeflow_api.service.AuthService;
 import com.storeflow.storeflow_api.service.FileStorageService;
@@ -27,6 +31,7 @@ import java.io.IOException;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Authentication", description = "User authentication, authorization, and account management endpoints")
 public class AuthController {
 
     private final AuthService authService;
@@ -39,6 +44,12 @@ public class AuthController {
      * @return 201 CREATED with AuthResponse containing JWT tokens
      */
     @PostMapping("/signup")
+    @Operation(summary = "Register a new user", description = "Creates a new user account with email, password, and full name. Returns JWT access and refresh tokens.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "User registered successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request or email already exists"),
+        @ApiResponse(responseCode = "409", description = "Email already registered")
+    })
     public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
         log.info("Signup request for email: {}", request.getEmail());
         AuthResponse response = authService.signup(request);
@@ -52,6 +63,12 @@ public class AuthController {
      * @return 200 OK with AuthResponse containing JWT tokens
      */
     @PostMapping("/login")
+    @Operation(summary = "User login", description = "Authenticates user with email and password. Returns JWT access and refresh tokens for subsequent authenticated requests.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Login successful, tokens returned"),
+        @ApiResponse(responseCode = "400", description = "Invalid request"),
+        @ApiResponse(responseCode = "401", description = "Invalid email or password")
+    })
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         log.info("Login request for email: {}", request.getEmail());
         AuthResponse response = authService.login(request);
@@ -65,6 +82,12 @@ public class AuthController {
      * @return 200 OK with AuthResponse containing new accessToken
      */
     @PostMapping("/refresh")
+    @Operation(summary = "Refresh access token", description = "Generates a new access token using a valid refresh token. Use this when access token expires.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid refresh token"),
+        @ApiResponse(responseCode = "401", description = "Refresh token expired or invalid")
+    })
     public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         log.info("Token refresh request");
         AuthResponse response = authService.refresh(request);

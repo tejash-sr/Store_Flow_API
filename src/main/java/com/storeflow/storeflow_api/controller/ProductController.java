@@ -1,5 +1,11 @@
 package com.storeflow.storeflow_api.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.storeflow.storeflow_api.dto.ProductRequest;
 import com.storeflow.storeflow_api.dto.ProductResponse;
 import com.storeflow.storeflow_api.dto.FileUploadResponse;
@@ -35,6 +41,7 @@ import java.util.Optional;
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Products", description = "API endpoints for product management (CRUD operations, inventory management)")
 public class ProductController {
 
     private final ProductService productService;
@@ -44,6 +51,13 @@ public class ProductController {
      * POST /api/products - Create a new product.
      */
     @PostMapping
+    @Operation(summary = "Create a new product", description = "Creates a new product in the system. Requires authentication. Only admins can create products.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Product created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request body (validation error)"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Bearer token required"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
+    })
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
         ProductResponse response = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -53,6 +67,11 @@ public class ProductController {
      * GET /api/products - List all products with pagination and filtering.
      */
     @GetMapping
+    @Operation(summary = "List all products", description = "Retrieves a paginated list of products with optional filtering by name and status. Supports pagination with size and page parameters.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved products list"),
+        @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
+    })
     public ResponseEntity<Page<ProductResponse>> getAllProducts(
         Pageable pageable,
         @RequestParam(required = false) String name,
@@ -65,6 +84,11 @@ public class ProductController {
      * GET /api/products/{id} - Get a single product by ID.
      */
     @GetMapping("/{id}")
+    @Operation(summary = "Get product by ID", description = "Retrieves a single product by its unique identifier with full category details.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product found and returned"),
+        @ApiResponse(responseCode = "404", description = "Product not found")
+    })
     public ResponseEntity<?> getProductById(@PathVariable Long id) {
         Optional<ProductResponse> product = productService.getProductById(id);
         if (product.isPresent()) {
@@ -78,6 +102,12 @@ public class ProductController {
      * PUT /api/products/{id} - Update a product (full update).
      */
     @PutMapping("/{id}")
+    @Operation(summary = "Update a product", description = "Performs a full update of all product fields. All fields in the request body are required.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request body"),
+        @ApiResponse(responseCode = "404", description = "Product not found")
+    })
     public ResponseEntity<?> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
         try {
             ProductResponse response = productService.updateProduct(id, request);
@@ -92,6 +122,12 @@ public class ProductController {
      * PATCH /api/products/{id}/stock - Adjust product stock (atomic).
      */
     @PatchMapping("/{id}/stock")
+    @Operation(summary = "Adjust product stock", description = "Atomically adjusts the stock quantity for a product. Supports both increment (positive) and decrement (negative) operations.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Stock adjusted successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid quantity or insufficient stock"),
+        @ApiResponse(responseCode = "404", description = "Product not found")
+    })
     public ResponseEntity<?> adjustStock(@PathVariable Long id, @RequestParam Long quantity) {
         try {
             ProductResponse response = productService.adjustStock(id, quantity);
@@ -106,6 +142,11 @@ public class ProductController {
      * DELETE /api/products/{id} - Soft delete a product (mark as DISCONTINUED).
      */
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a product", description = "Soft-deletes a product by marking its status as DISCONTINUED. The product record remains in the database.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Product deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Product not found")
+    })
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         try {
             productService.deleteProduct(id);

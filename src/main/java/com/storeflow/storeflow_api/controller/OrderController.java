@@ -1,5 +1,9 @@
 package com.storeflow.storeflow_api.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.storeflow.storeflow_api.dto.OrderRequest;
 import com.storeflow.storeflow_api.dto.OrderResponse;
 import com.storeflow.storeflow_api.entity.Order;
@@ -32,6 +36,7 @@ import java.util.Optional;
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Orders", description = "Order management endpoints - place orders, list orders, update status, generate reports")
 public class OrderController {
 
     private final OrderService orderService;
