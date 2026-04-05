@@ -35,13 +35,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author StoreFlow
  * @version 1.0
  */
+import com.storeflow.storeflow_api.config.TestMailConfig;
+import org.springframework.context.annotation.Import;
+
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(TestMailConfig.class)
 @TestPropertySource(properties = {
-    "spring.datasource.url=jdbc:h2:mem:testdb",
+    "spring.datasource.url=jdbc:h2:mem:testdb;MODE=PostgreSQL",
     "spring.datasource.driverClassName=org.h2.Driver",
     "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
     "spring.h2.console.enabled=false",
+    "spring.flyway.enabled=false",
+    "spring.jpa.hibernate.ddl-auto=create-drop",
     "logging.level.ROOT=INFO",
     "logging.level.com.storeflow.storeflow_api.config.RequestLoggingFilter=DEBUG",
     // Mail configuration for testing
