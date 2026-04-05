@@ -11,10 +11,12 @@ import com.storeflow.storeflow_api.config.TestMailConfig;
 @ActiveProfiles("test")
 @Import(TestMailConfig.class)
 @TestPropertySource(properties = {
-	"spring.datasource.url=jdbc:h2:mem:testdb",
+	"spring.datasource.url=jdbc:h2:mem:testdb;MODE=PostgreSQL",
 	"spring.datasource.driverClassName=org.h2.Driver",
 	"spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
-	"spring.h2.console.enabled=false"
+	"spring.h2.console.enabled=false",
+	"spring.flyway.enabled=false",
+	"spring.jpa.hibernate.ddl-auto=create-drop"
 })
 class StoreflowApiApplicationTests {
 
