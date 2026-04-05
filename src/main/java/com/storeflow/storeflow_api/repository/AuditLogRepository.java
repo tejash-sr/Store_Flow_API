@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Repository interface for AuditLog entity.
@@ -30,24 +31,28 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     Page<AuditLog> findByEntityTypeAndEntityId(String entityType, Long entityId, Pageable pageable);
 
     /**
-     * Find all audit logs for a user.
+     * Find all audit logs for a user by user ID (UUID).
      */
-    List<AuditLog> findByUserId(Long userId);
+    @Query("SELECT a FROM AuditLog a WHERE a.user.id = :userId")
+    List<AuditLog> findByUserId(@Param("userId") UUID userId);
 
     /**
-     * Find paginated audit logs for a user.
+     * Find paginated audit logs for a user by user ID (UUID).
      */
-    Page<AuditLog> findByUserId(Long userId, Pageable pageable);
+    @Query("SELECT a FROM AuditLog a WHERE a.user.id = :userId")
+    Page<AuditLog> findByUserId(@Param("userId") UUID userId, Pageable pageable);
 
     /**
-     * Find all audit logs for an admin user.
+     * Find all audit logs for an admin user by admin ID (UUID).
      */
-    List<AuditLog> findByAdminId(Long adminId);
+    @Query("SELECT a FROM AuditLog a WHERE a.admin.id = :adminId")
+    List<AuditLog> findByAdminId(@Param("adminId") UUID adminId);
 
     /**
-     * Find paginated audit logs for an admin user.
+     * Find paginated audit logs for an admin user by admin ID (UUID).
      */
-    Page<AuditLog> findByAdminId(Long adminId, Pageable pageable);
+    @Query("SELECT a FROM AuditLog a WHERE a.admin.id = :adminId")
+    Page<AuditLog> findByAdminId(@Param("adminId") UUID adminId, Pageable pageable);
 
     /**
      * Find all audit logs for a specific action.

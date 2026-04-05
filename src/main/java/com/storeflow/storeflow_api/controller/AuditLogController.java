@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -72,7 +73,7 @@ public class AuditLogController {
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT') or @userService.isCurrentUser(#userId)")
     @Operation(summary = "Get audit logs for a user", security = @SecurityRequirement(name = "bearer-jwt"))
-    public ResponseEntity<List<AuditLogDTO>> getAuditLogsForUser(@PathVariable Long userId) {
+    public ResponseEntity<List<AuditLogDTO>> getAuditLogsForUser(@PathVariable UUID userId) {
         log.info("Fetching audit logs for user ID: {}", userId);
         List<AuditLog> auditLogs = auditLogService.getAuditLogsForUser(userId);
         List<AuditLogDTO> auditLogDTOs = auditLogs.stream()
@@ -88,7 +89,7 @@ public class AuditLogController {
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPORT') or @userService.isCurrentUser(#userId)")
     @Operation(summary = "Get paginated audit logs for a user", security = @SecurityRequirement(name = "bearer-jwt"))
     public ResponseEntity<Page<AuditLogDTO>> getAuditLogsForUserPaginated(
-        @PathVariable Long userId,
+        @PathVariable UUID userId,
         Pageable pageable) {
         log.info("Fetching paginated audit logs for user ID: {}", userId);
         Page<AuditLog> auditLogs = auditLogService.getAuditLogsForUser(userId, pageable);
@@ -101,7 +102,7 @@ public class AuditLogController {
     @GetMapping("/admin/{adminId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get audit logs for an admin user", security = @SecurityRequirement(name = "bearer-jwt"))
-    public ResponseEntity<List<AuditLogDTO>> getAuditLogsForAdmin(@PathVariable Long adminId) {
+    public ResponseEntity<List<AuditLogDTO>> getAuditLogsForAdmin(@PathVariable UUID adminId) {
         log.info("Fetching audit logs for admin ID: {}", adminId);
         List<AuditLog> auditLogs = auditLogService.getAuditLogsForAdmin(adminId);
         List<AuditLogDTO> auditLogDTOs = auditLogs.stream()
