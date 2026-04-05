@@ -11,6 +11,7 @@ uploads/
 test-uploads-*/
 test_output.txt
 test_*.log
+error.txt
 
 ### STS ###
 .apt_generated
