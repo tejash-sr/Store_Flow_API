@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -41,7 +42,7 @@ class AsyncJobServiceTest {
         asyncJobService = new AsyncJobService(jobRepository, new ObjectMapper());
         
         testUser = new User();
-        testUser.setId(1L);
+        testUser.setId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         testUser.setEmail("test@example.com");
         testUser.setFullName("Test User");
         

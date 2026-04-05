@@ -1,9 +1,7 @@
 package com.storeflow.storeflow_api.graphql;
 
-import com.storeflow.storeflow_api.dto.PageResponse;
+import com.storeflow.storeflow_api.dto.ProductResponse;
 import com.storeflow.storeflow_api.entity.Category;
-import com.storeflow.storeflow_api.entity.Product;
-import com.storeflow.storeflow_api.service.CategoryService;
 import com.storeflow.storeflow_api.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -15,7 +13,6 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,11 +24,9 @@ import java.util.Map;
 public class ProductResolver {
     
     private final ProductService productService;
-    private final CategoryService categoryService;
     
-    public ProductResolver(ProductService productService, CategoryService categoryService) {
+    public ProductResolver(ProductService productService) {
         this.productService = productService;
-        this.categoryService = categoryService;
     }
     
     /**
@@ -60,8 +55,7 @@ public class ProductResolver {
         
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
-        // TODO: Implement filtered search
-        Page<Product> productPage = productService.getAllProducts(pageRequest);
+        Page<ProductResponse> productPage = productService.getAllProducts(pageRequest, name, status);
         
         return buildProductPageResponse(productPage);
     }
@@ -70,28 +64,22 @@ public class ProductResolver {
      * Query: product - Get single product by ID
      */
     @QueryMapping
-    public Product product(@Argument Long id) {
-        return productService.getProductById(id);
+    public ProductResponse product(@Argument Long id) {
+        return productService.getProductById(id).orElse(null);
     }
     
     /**
      * SchemaMapping: category - Resolve category field for Product type
      */
     @SchemaMapping(typeName = "Product")
-    public Category category(Product product) {
-        if (product.getCategory() != null) {
-            return product.getCategory();
-        }
-        if (product.getCategoryId() != null) {
-            return categoryService.getCategoryById(product.getCategoryId());
-        }
-        return null;
+    public Category category(ProductResponse product) {
+        return product.getCategory();
     }
     
     /**
      * Build product page response with pagination info
      */
-    private Map<String, Object> buildProductPageResponse(Page<Product> page) {
+    private Map<String, Object> buildProductPageResponse(Page<ProductResponse> page) {
         Map<String, Object> response = new HashMap<>();
         response.put("content", page.getContent());
         

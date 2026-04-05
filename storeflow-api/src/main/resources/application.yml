@@ -102,7 +102,9 @@ springdoc:
     path: /swagger-ui.html
     doc-expansion: list
     display-request-duration: true
-    syntax-highlight: highlight
+    syntax-highlight:
+      activated: true
+      theme: monokai
   api-docs:
     path: /v3/api-docs
   show-actuator: true

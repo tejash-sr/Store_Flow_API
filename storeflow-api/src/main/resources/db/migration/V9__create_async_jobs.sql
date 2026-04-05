@@ -2,7 +2,7 @@ CREATE TABLE async_jobs (
     id BIGSERIAL PRIMARY KEY,
     job_id VARCHAR(36) NOT NULL UNIQUE,
     job_type VARCHAR(50) NOT NULL,
-    user_id BIGINT NOT NULL,
+    user_id UUID NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     progress INTEGER DEFAULT 0,
     result_data TEXT,

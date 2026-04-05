@@ -1,6 +1,6 @@
 package com.storeflow.storeflow_api.config;
 
-import com.storeflow.storeflow_api.util.JwtUtil;
+import com.storeflow.storeflow_api.security.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

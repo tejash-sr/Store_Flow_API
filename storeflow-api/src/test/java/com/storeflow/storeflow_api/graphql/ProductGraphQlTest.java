@@ -1,18 +1,23 @@
 package com.storeflow.storeflow_api.graphql;
 
+import com.storeflow.storeflow_api.dto.ProductResponse;
 import com.storeflow.storeflow_api.entity.Category;
-import com.storeflow.storeflow_api.entity.Product;
 import com.storeflow.storeflow_api.entity.enums.ProductStatus;
-import com.storeflow.storeflow_api.service.CategoryService;
 import com.storeflow.storeflow_api.service.ProductService;
-import com.storeflow.storeflow_api.util.JwtUtil;
+import com.storeflow.storeflow_api.service.OrderService;
+import com.storeflow.storeflow_api.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.graphql.GraphQlTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Import;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -29,14 +34,14 @@ class ProductGraphQlTest {
     
     @MockBean
     private ProductService productService;
-    
+
     @MockBean
-    private CategoryService categoryService;
+    private OrderService orderService;
     
     @MockBean
     private JwtUtil jwtUtil;
     
-    private Product testProduct;
+    private ProductResponse testProduct;
     private Category testCategory;
     
     @BeforeEach
@@ -47,25 +52,37 @@ class ProductGraphQlTest {
         testCategory.setName("Electronics");
         testCategory.setDescription("Electronic devices");
         
-        testProduct = new Product();
-        testProduct.setId(1L);
-        testProduct.setName("Laptop");
-        testProduct.setDescription("High-performance laptop");
-        testProduct.setSku("LAPTOP-001");
-        testProduct.setPrice(1299.99);
-        testProduct.setStockQuantity(50);
-        testProduct.setStatus(ProductStatus.ACTIVE);
-        testProduct.setCategory(testCategory);
-        testProduct.setCategoryId(1L);
+                testProduct = ProductResponse.builder()
+                                .id(1L)
+                                .name("Laptop")
+                                .description("High-performance laptop")
+                                .sku("LAPTOP-001")
+                                .price(new java.math.BigDecimal("1299.99"))
+                                .stockQuantity(50L)
+                                .categoryName("Electronics")
+                                .categoryId(1L)
+                                .category(testCategory)
+                                .status(ProductStatus.ACTIVE)
+                                .build();
     }
     
     @Test
     void testProductQuery_ReturnsProductDetails() {
         // Arrange
-        when(productService.getProductById(1L)).thenReturn(testProduct);
+                when(productService.getProductById(1L)).thenReturn(Optional.of(testProduct));
         
         // Act & Assert
-        graphQlTester.documentName("product")
+                graphQlTester.document("""
+                                query($id: ID!) {
+                                    product(id: $id) {
+                                        id
+                                        name
+                                        sku
+                                        price
+                                        stockQuantity
+                                    }
+                                }
+                                """)
                 .variable("id", "1")
                 .execute()
                 .path("product.id").entity(String.class).isEqualTo("1")
@@ -80,10 +97,19 @@ class ProductGraphQlTest {
     @Test
     void testProductCategoryField_ResolvesCategory() {
         // Arrange
-        when(productService.getProductById(1L)).thenReturn(testProduct);
+                when(productService.getProductById(1L)).thenReturn(Optional.of(testProduct));
         
         // Act & Assert
-        graphQlTester.documentName("productWithCategory")
+                graphQlTester.document("""
+                                query($id: ID!) {
+                                    product(id: $id) {
+                                        category {
+                                            id
+                                            name
+                                        }
+                                    }
+                                }
+                                """)
                 .variable("id", "1")
                 .execute()
                 .path("product.category.id").entity(String.class).isEqualTo("1")
@@ -95,13 +121,19 @@ class ProductGraphQlTest {
     @Test
     void testProductQuery_NotFound_ReturnsNull() {
         // Arrange
-        when(productService.getProductById(999L)).thenReturn(null);
+                when(productService.getProductById(999L)).thenReturn(Optional.empty());
         
         // Act & Assert
-        graphQlTester.documentName("product")
+                graphQlTester.document("""
+                                query($id: ID!) {
+                                    product(id: $id) {
+                                        id
+                                    }
+                                }
+                                """)
                 .variable("id", "999")
                 .execute()
-                .path("product").entity(Object.class).isNull();
+                .path("product").valueIsNull();
     }
 }
 
@@ -110,6 +142,7 @@ class ProductGraphQlTest {
  * Tests GraphQL mutations for CRUD operations
  */
 @GraphQlTest(MutationResolver.class)
+@Import(MutationGraphQlTest.MethodSecurityTestConfig.class)
 class MutationGraphQlTest {
     
     @Autowired
@@ -117,34 +150,47 @@ class MutationGraphQlTest {
     
     @MockBean
     private ProductService productService;
+
+    @MockBean
+    private OrderService orderService;
     
     @MockBean
     private JwtUtil jwtUtil;
+
+    @TestConfiguration(proxyBeanMethods = false)
+    @EnableMethodSecurity(prePostEnabled = true)
+    static class MethodSecurityTestConfig {
+    }
     
-    private Product newProduct;
+    private ProductResponse newProduct;
     
     @BeforeEach
     void setUp() {
-        newProduct = new Product();
-        newProduct.setId(1L);
-        newProduct.setName("New Product");
-        newProduct.setSku("NEW-001");
-        newProduct.setPrice(99.99);
-        newProduct.setStockQuantity(100);
-        newProduct.setStatus(ProductStatus.ACTIVE);
+        newProduct = ProductResponse.builder()
+            .id(1L)
+            .name("New Product")
+            .sku("NEW-001")
+            .price(new java.math.BigDecimal("99.99"))
+            .stockQuantity(100L)
+            .status(ProductStatus.ACTIVE)
+            .build();
     }
     
     @Test
     @WithMockUser(roles = "ADMIN")
     void testDeleteProductMutation_AdminUser_ReturnsTrue() {
         // Arrange
-        when(productService.deleteProduct(1L)).thenReturn(true);
+        doNothing().when(productService).deleteProduct(1L);
         
         // Act & Assert
-        graphQlTester.documentName("deleteProduct")
+        graphQlTester.document("""
+            mutation($id: ID!) {
+              deleteProduct(id: $id)
+            }
+            """)
                 .variable("id", "1")
                 .execute()
-                .path("deleteProduct").entity(Boolean.class).isTrue();
+                .path("deleteProduct").entity(Boolean.class).isEqualTo(true);
         
         verify(productService).deleteProduct(1L);
     }
@@ -152,7 +198,11 @@ class MutationGraphQlTest {
     @Test
     void testDeleteProductMutation_UnauthenticatedUser_ReturnsError() {
         // Act & Assert
-        graphQlTester.documentName("deleteProduct")
+        graphQlTester.document("""
+            mutation($id: ID!) {
+              deleteProduct(id: $id)
+            }
+            """)
                 .variable("id", "1")
                 .execute()
                 .errors()

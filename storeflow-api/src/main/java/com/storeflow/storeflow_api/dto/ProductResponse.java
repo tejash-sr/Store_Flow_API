@@ -1,5 +1,7 @@
 package com.storeflow.storeflow_api.dto;
 
+import com.storeflow.storeflow_api.entity.Category;
+import com.storeflow.storeflow_api.entity.enums.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,8 +26,10 @@ public class ProductResponse {
     private BigDecimal price;
     private Long stockQuantity;
     private String categoryName;
+    private Long categoryId;
+    private Category category;
     private String imageUrl;
-    private String status;
+    private ProductStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

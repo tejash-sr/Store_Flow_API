@@ -52,6 +52,7 @@ public class SecurityConfig {
                 // Public endpoints - no authentication required
                 .requestMatchers("/api/health", "/api/auth/login", "/api/auth/signup", 
                                 "/api/auth/forgot-password", "/api/auth/reset-password/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products").permitAll()
                 
                 // Actuator endpoints - admin only
