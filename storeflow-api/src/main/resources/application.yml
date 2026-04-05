@@ -83,6 +83,18 @@ management:
     app:
       enabled: true
 
+# SpringDoc OpenAPI/Swagger Configuration
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    doc-expansion: list
+    display-request-duration: true
+    syntax-highlight: highlight
+  api-docs:
+    path: /v3/api-docs
+  show-actuator: true
+
 # Logging
 logging:
   level:
@@ -90,6 +102,7 @@ logging:
     com.storeflow: DEBUG
     org.springframework.web: DEBUG
     org.springframework.security: DEBUG
+    org.springdoc: INFO
     org.hibernate: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
