@@ -1,0 +1,252 @@
+"""
+Product type with full details
+"""
+type Product {
+    id: ID!
+    name: String!
+    description: String
+    sku: String!
+    price: Float!
+    stockQuantity: Int!
+    imageUrl: String
+    status: ProductStatus!
+    categoryId: ID!
+    category: Category!
+    createdAt: String!
+    updatedAt: String!
+}
+
+"""
+Category type for product classification
+"""
+type Category {
+    id: ID!
+    name: String!
+    description: String
+    createdAt: String!
+    updatedAt: String!
+}
+
+"""
+Order type with itemized details
+"""
+type Order {
+    id: ID!
+    referenceNumber: String!
+    customerId: ID!
+    customer: User!
+    items: [OrderItem!]!
+    status: OrderStatus!
+    totalAmount: Float!
+    shippingAddress: ShippingAddress!
+    createdAt: String!
+    updatedAt: String!
+}
+
+"""
+Order item type - represents a product in an order
+"""
+type OrderItem {
+    id: ID!
+    orderId: ID!
+    productId: ID!
+    product: Product!
+    quantity: Int!
+    unitPrice: Float!
+    subtotal: Float!
+}
+
+"""
+Shipping address type - embedded value object
+"""
+type ShippingAddress {
+    street: String!
+    city: String!
+    country: String!
+    postalCode: String!
+}
+
+"""
+User type with profile information
+"""
+type User {
+    id: ID!
+    email: String!
+    fullName: String!
+    role: UserRole!
+    avatarPath: String
+    createdAt: String!
+    updatedAt: String!
+}
+
+"""
+Page info for offset-based pagination
+"""
+type PageInfo {
+    page: Int!
+    size: Int!
+    totalElements: Int!
+    totalPages: Int!
+    first: Boolean!
+    last: Boolean!
+    hasNext: Boolean!
+}
+
+"""
+Paginated products response
+"""
+type ProductPage {
+    content: [Product!]!
+    pageInfo: PageInfo!
+}
+
+"""
+Paginated orders response
+"""
+type OrderPage {
+    content: [Order!]!
+    pageInfo: PageInfo!
+}
+
+"""
+Error response type
+"""
+type ErrorResponse {
+    message: String!
+    status: Int!
+    timestamp: String!
+}
+
+enum ProductStatus {
+    ACTIVE
+    INACTIVE
+    DISCONTINUED
+}
+
+enum OrderStatus {
+    PENDING
+    CONFIRMED
+    SHIPPED
+    DELIVERED
+    CANCELLED
+}
+
+enum UserRole {
+    USER
+    ADMIN
+}
+
+"""
+Root query type
+"""
+type Query {
+    """Get all products with optional filters and pagination"""
+    products(
+        page: Int = 0
+        size: Int = 20
+        sort: String = "createdAt,desc"
+        name: String
+        categoryId: ID
+        status: ProductStatus
+        minPrice: Float
+        maxPrice: Float
+    ): ProductPage!
+    
+    """Get a single product by ID"""
+    product(id: ID!): Product
+    
+    """Get all categories"""
+    categories: [Category!]!
+    
+    """Get a single category by ID"""
+    category(id: ID!): Category
+    
+    """Get all orders (admin) or own orders (user)"""
+    orders(
+        page: Int = 0
+        size: Int = 20
+        sort: String = "createdAt,desc"
+    ): OrderPage!
+    
+    """Get a single order by ID"""
+    order(id: ID!): Order
+    
+    """Get current authenticated user"""
+    currentUser: User
+    
+    """Low stock products (admin only)"""
+    lowStockProducts(threshold: Int!): [Product!]!
+}
+
+"""
+Root mutation type
+"""
+type Mutation {
+    """Create a new product (admin only)"""
+    createProduct(input: CreateProductInput!): Product!
+    
+    """Update an existing product (admin only)"""
+    updateProduct(id: ID!, input: UpdateProductInput!): Product!
+    
+    """Adjust product stock (admin only)"""
+    adjustStock(productId: ID!, quantity: Int!): Product!
+    
+    """Delete a product (admin only)"""
+    deleteProduct(id: ID!): Boolean!
+    
+    """Place a new order (authenticated users)"""
+    placeOrder(input: PlaceOrderInput!): Order!
+    
+    """Update order status (admin only)"""
+    updateOrderStatus(orderId: ID!, status: OrderStatus!): Order!
+}
+
+"""
+Input type for creating a product
+"""
+input CreateProductInput {
+    name: String!
+    description: String
+    sku: String!
+    price: Float!
+    stockQuantity: Int!
+    categoryId: ID!
+    imageUrl: String
+}
+
+"""
+Input type for updating a product
+"""
+input UpdateProductInput {
+    name: String
+    description: String
+    price: Float
+    stockQuantity: Int
+    status: ProductStatus
+}
+
+"""
+Input type for placing an order
+"""
+input PlaceOrderInput {
+    items: [OrderItemInput!]!
+    shippingAddress: ShippingAddressInput!
+}
+
+"""
+Input type for order items
+"""
+input OrderItemInput {
+    productId: ID!
+    quantity: Int!
+}
+
+"""
+Input type for shipping address
+"""
+input ShippingAddressInput {
+    street: String!
+    city: String!
+    country: String!
+    postalCode: String!
+}
