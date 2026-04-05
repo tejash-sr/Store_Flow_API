@@ -4,6 +4,7 @@ import com.storeflow.storeflow_api.entity.Order;
 import com.storeflow.storeflow_api.entity.Order.OrderStatus;
 import com.storeflow.storeflow_api.entity.OrderItem;
 import com.storeflow.storeflow_api.entity.Product;
+import com.storeflow.storeflow_api.entity.ShippingAddress;
 import com.storeflow.storeflow_api.entity.Store;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,6 +66,14 @@ class PdfGenerationServiceTest {
         items.add(item1);
         items.add(item2);
 
+        ShippingAddress address = ShippingAddress.builder()
+            .street("123 Main St")
+            .city("Anytown")
+            .state("CA")
+            .postalCode("12345")
+            .country("USA")
+            .build();
+
         testOrder = Order.builder()
             .id(1L)
             .orderNumber("ORD-ABC123")
@@ -72,7 +81,7 @@ class PdfGenerationServiceTest {
             .customerName("John Doe")
             .customerEmail("john@example.com")
             .customerPhone("555-1234")
-            .shippingAddress("123 Main St, Anytown, USA 12345")
+            .shippingAddress(address)
             .status(OrderStatus.PENDING)
             .items(items)
             .total(BigDecimal.valueOf(40.00))
@@ -131,7 +140,14 @@ class PdfGenerationServiceTest {
     @Test
     void testGenerateOrderReport_WithSpecialCharacters_HandledCorrectly() throws IOException {
         testOrder.setCustomerName("John O'Brien-Smith");
-        testOrder.setShippingAddress("456 \"Oak\" Lane, Suite #5");
+        ShippingAddress specialAddress = ShippingAddress.builder()
+            .street("456 \"Oak\" Lane")
+            .city("Suite #5")
+            .state("CA")
+            .postalCode("90000")
+            .country("USA")
+            .build();
+        testOrder.setShippingAddress(specialAddress);
 
         byte[] pdfBytes = pdfGenerationService.generateOrderReport(testOrder);
 

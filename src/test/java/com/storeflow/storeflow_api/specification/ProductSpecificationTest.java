@@ -254,7 +254,7 @@ class ProductSpecificationTest {
         assertThat(results)
                 .hasSize(2)
                 .extracting("isActive")
-                .allMatch(active -> active == true);
+                .allMatch(active -> Boolean.TRUE.equals(active));
     }
 
     @Test
