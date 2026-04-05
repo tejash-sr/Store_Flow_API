@@ -11,16 +11,16 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
   
-  # Disable Flyway for H2 in-memory tests
+  # Enable Flyway for schema versioning validation in tests
   flyway:
-    enabled: false
+    enabled: true
     
 logging:
   level:
