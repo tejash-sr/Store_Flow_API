@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service for managing audit logs.
@@ -93,7 +94,7 @@ public class AuditLogService {
      * Get audit logs for a user.
      */
     @Transactional(readOnly = true)
-    public List<AuditLog> getAuditLogsForUser(Long userId) {
+    public List<AuditLog> getAuditLogsForUser(UUID userId) {
         log.debug("Fetching audit logs for user ID: {}", userId);
         return auditLogRepository.findByUserId(userId);
     }
@@ -102,7 +103,7 @@ public class AuditLogService {
      * Get paginated audit logs for a user.
      */
     @Transactional(readOnly = true)
-    public Page<AuditLog> getAuditLogsForUser(Long userId, Pageable pageable) {
+    public Page<AuditLog> getAuditLogsForUser(UUID userId, Pageable pageable) {
         log.debug("Fetching paginated audit logs for user ID: {}", userId);
         return auditLogRepository.findByUserId(userId, pageable);
     }
@@ -111,7 +112,7 @@ public class AuditLogService {
      * Get audit logs for an admin user.
      */
     @Transactional(readOnly = true)
-    public List<AuditLog> getAuditLogsForAdmin(Long adminId) {
+    public List<AuditLog> getAuditLogsForAdmin(UUID adminId) {
         log.debug("Fetching audit logs for admin ID: {}", adminId);
         return auditLogRepository.findByAdminId(adminId);
     }
@@ -120,7 +121,7 @@ public class AuditLogService {
      * Get paginated audit logs for an admin user.
      */
     @Transactional(readOnly = true)
-    public Page<AuditLog> getAuditLogsForAdmin(Long adminId, Pageable pageable) {
+    public Page<AuditLog> getAuditLogsForAdmin(UUID adminId, Pageable pageable) {
         log.debug("Fetching paginated audit logs for admin ID: {}", adminId);
         return auditLogRepository.findByAdminId(adminId, pageable);
     }
