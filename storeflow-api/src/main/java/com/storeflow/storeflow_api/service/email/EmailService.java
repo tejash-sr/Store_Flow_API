@@ -246,12 +246,14 @@ public class EmailService {
         }
         
         try {
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
 
             helper.setFrom(fromEmail, fromName);
             helper.setTo(toEmail);
             helper.setSubject(template.getSubject());
             helper.setText(htmlContent, true); // true = isHtml
+
+            message.saveChanges();
 
             mailSender.send(message);
         } catch (IllegalArgumentException e) {
