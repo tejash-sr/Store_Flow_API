@@ -1,4 +1,14 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/storeflow_test
+    username: storeflow
+    password: storeflow123
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 10000
+
   application:
     name: storeflow-api-test
   

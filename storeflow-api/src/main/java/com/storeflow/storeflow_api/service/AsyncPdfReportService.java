@@ -2,7 +2,6 @@ package com.storeflow.storeflow_api.service;
 
 import com.storeflow.storeflow_api.entity.AsyncJob;
 import com.storeflow.storeflow_api.entity.Order;
-import com.storeflow.storeflow_api.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -52,21 +51,19 @@ public class AsyncPdfReportService {
             asyncJobService.markProcessing(job);
             
             // Fetch order details
-            Order order = orderService.getOrderById(orderId);
-            if (order == null) {
-                throw new RuntimeException("Order not found: " + orderId);
-            }
+            Order order = orderService.getOrderEntityById(orderId)
+                    .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
             
             log.info("Starting async PDF generation for order: {}, jobId: {}", orderId, job.getJobId());
             
             // Generate PDF (this may take time)
             asyncJobService.updateProgress(job, 25, 45);
-            byte[] pdfContent = pdfGenerationService.generateOrderPdf(order);
+            byte[] pdfContent = pdfGenerationService.generateOrderReport(order);
             
             asyncJobService.updateProgress(job, 50, 30);
             
             // Save PDF to storage
-            String fileName = "order-" + order.getReferenceNumber() + ".pdf";
+            String fileName = "order-" + order.getOrderNumber() + ".pdf";
             String filePath = fileStorageService.savePdfFile(fileName, pdfContent);
             
             asyncJobService.updateProgress(job, 75, 10);
@@ -76,7 +73,7 @@ public class AsyncPdfReportService {
             result.put("filePath", filePath);
             result.put("fileName", fileName);
             result.put("orderId", orderId);
-            result.put("orderNumber", order.getReferenceNumber());
+            result.put("orderNumber", order.getOrderNumber());
             
             asyncJobService.markCompleted(job, result);
             log.info("PDF generation completed: jobId={}, order={}", job.getJobId(), orderId);

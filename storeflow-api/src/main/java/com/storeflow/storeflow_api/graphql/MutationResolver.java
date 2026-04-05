@@ -1,7 +1,10 @@
 package com.storeflow.storeflow_api.graphql;
 
-import com.storeflow.storeflow_api.entity.Order;
-import com.storeflow.storeflow_api.entity.Product;
+import com.storeflow.storeflow_api.dto.OrderItemRequest;
+import com.storeflow.storeflow_api.dto.OrderRequest;
+import com.storeflow.storeflow_api.dto.OrderResponse;
+import com.storeflow.storeflow_api.dto.ProductRequest;
+import com.storeflow.storeflow_api.dto.ProductResponse;
 import com.storeflow.storeflow_api.service.OrderService;
 import com.storeflow.storeflow_api.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +13,9 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,19 +39,20 @@ public class MutationResolver {
      */
     @MutationMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Product createProduct(@Argument Map<String, Object> input) {
+        public ProductResponse createProduct(@Argument Map<String, Object> input) {
         log.info("GraphQL: Creating product with input: {}", input);
         
-        String name = (String) input.get("name");
-        String description = (String) input.get("description");
-        String sku = (String) input.get("sku");
-        Double price = ((Number) input.get("price")).doubleValue();
-        Integer stockQuantity = ((Number) input.get("stockQuantity")).intValue();
-        Long categoryId = Long.parseLong(input.get("categoryId").toString());
-        String imageUrl = (String) input.get("imageUrl");
-        
-        // TODO: Use ProductService.createProduct with proper DTO
-        return null; // Placeholder
+        ProductRequest request = ProductRequest.builder()
+            .name((String) input.get("name"))
+            .description((String) input.get("description"))
+            .sku((String) input.get("sku"))
+            .price(new BigDecimal(input.get("price").toString()))
+            .stockQuantity(Long.valueOf(input.get("stockQuantity").toString()))
+            .categoryId(Long.valueOf(input.get("categoryId").toString()))
+            .imageUrl((String) input.get("imageUrl"))
+            .build();
+
+        return productService.createProduct(request);
     }
     
     /**
@@ -53,14 +60,32 @@ public class MutationResolver {
      */
     @MutationMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Product updateProduct(
+        public ProductResponse updateProduct(
             @Argument Long id,
             @Argument Map<String, Object> input
     ) {
         log.info("GraphQL: Updating product {} with input: {}", id, input);
         
-        // TODO: Use ProductService.updateProduct with proper DTO
-        return productService.getProductById(id);
+        ProductResponse currentProduct = productService.getProductById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        ProductRequest request = ProductRequest.builder()
+            .name(input.containsKey("name") ? (String) input.get("name") : currentProduct.getName())
+            .description(input.containsKey("description") ? (String) input.get("description") : currentProduct.getDescription())
+            .sku(input.containsKey("sku") ? (String) input.get("sku") : currentProduct.getSku())
+            .price(input.containsKey("price") && input.get("price") != null
+                ? new BigDecimal(input.get("price").toString())
+                : currentProduct.getPrice())
+            .stockQuantity(input.containsKey("stockQuantity") && input.get("stockQuantity") != null
+                ? Long.valueOf(input.get("stockQuantity").toString())
+                : currentProduct.getStockQuantity())
+            .categoryId(input.containsKey("categoryId") && input.get("categoryId") != null
+                ? Long.valueOf(input.get("categoryId").toString())
+                : currentProduct.getCategoryId())
+            .imageUrl(input.containsKey("imageUrl") ? (String) input.get("imageUrl") : currentProduct.getImageUrl())
+            .build();
+
+        return productService.updateProduct(id, request);
     }
     
     /**
@@ -68,17 +93,13 @@ public class MutationResolver {
      */
     @MutationMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Product adjustStock(
+        public ProductResponse adjustStock(
             @Argument Long productId,
             @Argument Integer quantity
     ) {
         log.info("GraphQL: Adjusting stock for product {} by {}", productId, quantity);
         
-        Product product = productService.getProductById(productId);
-        product.setStockQuantity(product.getStockQuantity() + quantity);
-        
-        // TODO: Use ProductService.updateProduct
-        return product;
+        return productService.adjustStock(productId, quantity.longValue());
     }
     
     /**
@@ -103,15 +124,36 @@ public class MutationResolver {
      */
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
-    public Order placeOrder(@Argument Map<String, Object> input) {
+    public OrderResponse placeOrder(@Argument Map<String, Object> input) {
         log.info("GraphQL: Placing order with input: {}", input);
         
-        // TODO: Extract items and address from input
-        // Parse items list
-        // Parse shipping address
-        // Use OrderService.createOrder
-        
-        return null; // Placeholder
+        List<OrderItemRequest> items = new ArrayList<>();
+        Object itemsObject = input.get("items");
+        if (itemsObject instanceof List<?> rawItems) {
+            for (Object rawItem : rawItems) {
+                if (rawItem instanceof Map<?, ?> itemMap) {
+                    items.add(OrderItemRequest.builder()
+                            .productId(Long.valueOf(itemMap.get("productId").toString()))
+                            .quantity(Long.valueOf(itemMap.get("quantity").toString()))
+                            .build());
+                }
+            }
+        }
+
+        OrderRequest request = OrderRequest.builder()
+                .customerId(0L)
+                .items(items)
+                .build();
+
+        OrderResponse response = orderService.placeOrder(request);
+        response.setCustomerId(0L);
+
+        Object shippingAddress = input.get("shippingAddress");
+        if (shippingAddress != null) {
+            response.setShippingAddress(shippingAddress.toString());
+        }
+
+        return response;
     }
     
     /**
@@ -119,14 +161,12 @@ public class MutationResolver {
      */
     @MutationMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Order updateOrderStatus(
+    public OrderResponse updateOrderStatus(
             @Argument Long orderId,
             @Argument String status
     ) {
         log.info("GraphQL: Updating order {} status to {}", orderId, status);
         
-        Order order = orderService.getOrderById(orderId);
-        // TODO: Use OrderService.updateOrderStatus
-        return order;
+        return orderService.updateOrderStatus(orderId, status);
     }
 }

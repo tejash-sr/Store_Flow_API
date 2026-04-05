@@ -52,6 +52,28 @@ public class FileStorageService {
         validateFile(file);
         return saveAndResizeAvatar(file, userId);
     }
+
+    /**
+     * Save a generated PDF report file.
+     * @param fileName file name to use for the PDF
+     * @param content PDF bytes
+     * @return relative path to saved file
+     */
+    public String savePdfFile(String fileName, byte[] content) throws IOException {
+        Path dirPath = Paths.get(baseStoragePath, "reports");
+        Files.createDirectories(dirPath);
+
+        String safeFileName = Paths.get(fileName).getFileName().toString();
+        if (!safeFileName.toLowerCase().endsWith(".pdf")) {
+            safeFileName = safeFileName + ".pdf";
+        }
+
+        Path filePath = dirPath.resolve(safeFileName);
+        Files.write(filePath, content);
+
+        log.info("PDF file saved: {}/reports/{}", baseStoragePath, safeFileName);
+        return String.join("/", "reports", safeFileName);
+    }
     
     /**
      * Resize user avatar to standard dimensions (150x150px)

@@ -1,12 +1,10 @@
 package com.storeflow.storeflow_api.graphql;
 
-import com.storeflow.storeflow_api.entity.Order;
-import com.storeflow.storeflow_api.entity.OrderItem;
+import com.storeflow.storeflow_api.dto.OrderItemResponse;
+import com.storeflow.storeflow_api.dto.OrderResponse;
 import com.storeflow.storeflow_api.entity.Product;
 import com.storeflow.storeflow_api.entity.User;
 import com.storeflow.storeflow_api.service.OrderService;
-import com.storeflow.storeflow_api.service.ProductService;
-import com.storeflow.storeflow_api.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,13 +12,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,13 +26,9 @@ import java.util.Map;
 public class OrderResolver {
     
     private final OrderService orderService;
-    private final UserService userService;
-    private final ProductService productService;
     
-    public OrderResolver(OrderService orderService, UserService userService, ProductService productService) {
+    public OrderResolver(OrderService orderService) {
         this.orderService = orderService;
-        this.userService = userService;
-        this.productService = productService;
     }
     
     /**
@@ -63,8 +53,7 @@ public class OrderResolver {
         
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
-        // TODO: Implement user-specific order filtering
-        Page<Order> orderPage = orderService.getAllOrders(pageRequest);
+        Page<OrderResponse> orderPage = orderService.getAllOrders(pageRequest);
         
         return buildOrderPageResponse(orderPage);
     }
@@ -74,29 +63,23 @@ public class OrderResolver {
      * Users can only view their own orders
      */
     @QueryMapping
-    public Order order(@Argument Long id) {
-        return orderService.getOrderById(id);
+    public OrderResponse order(@Argument Long id) {
+        return orderService.getOrderById(id).orElse(null);
     }
     
     /**
      * SchemaMapping: customer - Resolve customer field for Order type
      */
     @SchemaMapping(typeName = "Order")
-    public User customer(Order order) {
-        if (order.getCustomer() != null) {
-            return order.getCustomer();
-        }
-        if (order.getCustomerId() != null) {
-            return userService.getUserById(order.getCustomerId());
-        }
-        return null;
+    public User customer(OrderResponse order) {
+        return order.getCustomer();
     }
     
     /**
      * SchemaMapping: items - Resolve items field for Order type
      */
     @SchemaMapping(typeName = "Order")
-    public List<OrderItem> items(Order order) {
+    public java.util.List<OrderItemResponse> items(OrderResponse order) {
         return order.getItems();
     }
     
@@ -104,20 +87,14 @@ public class OrderResolver {
      * SchemaMapping: product - Resolve product field for OrderItem type
      */
     @SchemaMapping(typeName = "OrderItem")
-    public Product product(OrderItem orderItem) {
-        if (orderItem.getProduct() != null) {
-            return orderItem.getProduct();
-        }
-        if (orderItem.getProductId() != null) {
-            return productService.getProductById(orderItem.getProductId());
-        }
-        return null;
+    public Product product(OrderItemResponse orderItem) {
+        return orderItem.getProduct();
     }
     
     /**
      * Build order page response with pagination info
      */
-    private Map<String, Object> buildOrderPageResponse(Page<Order> page) {
+    private Map<String, Object> buildOrderPageResponse(Page<OrderResponse> page) {
         Map<String, Object> response = new HashMap<>();
         response.put("content", page.getContent());
         

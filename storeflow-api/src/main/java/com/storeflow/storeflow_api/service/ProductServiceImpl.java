@@ -4,6 +4,7 @@ import com.storeflow.storeflow_api.dto.ProductRequest;
 import com.storeflow.storeflow_api.dto.ProductResponse;
 import com.storeflow.storeflow_api.entity.Category;
 import com.storeflow.storeflow_api.entity.Product;
+import com.storeflow.storeflow_api.entity.enums.ProductStatus;
 import com.storeflow.storeflow_api.repository.CategoryRepository;
 import com.storeflow.storeflow_api.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -129,8 +130,10 @@ public class ProductServiceImpl implements ProductService {
             .price(product.getPrice())
             .stockQuantity(0L) // TODO: Get from InventoryItem in Phase 4
             .categoryName(product.getCategory() != null ? product.getCategory().getName() : "Uncategorized")
+            .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
+            .category(product.getCategory())
             .imageUrl(null) // TODO: Add imageUrl field to Product in Phase 4
-            .status(product.getIsActive() ? "ACTIVE" : "DISCONTINUED")
+            .status(product.getIsActive() ? ProductStatus.ACTIVE : ProductStatus.DISCONTINUED)
             .createdAt(product.getCreatedAt())
             .updatedAt(product.getUpdatedAt())
             .build();
