@@ -86,7 +86,7 @@ class CsvExportServiceTest {
             .store(store)
             .customerName("Jane Smith")
             .customerEmail("jane@example.com")
-            .status(OrderStatus.PROCESSING)
+            .status(OrderStatus.CONFIRMED)
             .items(items2)
             .total(BigDecimal.valueOf(20.00))
             .createdAt(LocalDateTime.of(2024, 1, 20, 14, 30))
