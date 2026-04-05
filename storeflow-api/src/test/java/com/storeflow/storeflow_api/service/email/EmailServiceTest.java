@@ -134,7 +134,12 @@ class EmailServiceTest {
                 for (int i = 0; i < multipart.getCount(); i++) {
                     jakarta.mail.BodyPart part = multipart.getBodyPart(i);
                     if (part.getContentType().contains("text/html")) {
-                        return (String) part.getContent();
+                        Object partContent = part.getContent();
+                        if (partContent instanceof String) {
+                            return (String) partContent;
+                        } else if (partContent instanceof java.io.InputStream) {
+                            return new String(((java.io.InputStream) partContent).readAllBytes());
+                        }
                     }
                 }
                 
@@ -142,7 +147,12 @@ class EmailServiceTest {
                 for (int i = 0; i < multipart.getCount(); i++) {
                     jakarta.mail.BodyPart part = multipart.getBodyPart(i);
                     if (part.getContentType().contains("text/plain")) {
-                        return (String) part.getContent();
+                        Object partContent = part.getContent();
+                        if (partContent instanceof String) {
+                            return (String) partContent;
+                        } else if (partContent instanceof java.io.InputStream) {
+                            return new String(((java.io.InputStream) partContent).readAllBytes());
+                        }
                     }
                 }
             }
