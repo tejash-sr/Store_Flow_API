@@ -154,6 +154,7 @@ class OrderControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", roles = "USER")
     void testGetOrderByIdSuccess() throws Exception {
         // Create an order first
         OrderRequest request = OrderRequest.builder()
@@ -166,12 +167,15 @@ class OrderControllerTest {
             ))
             .build();
 
-        // Place the order through service
+        // Place the order
+        mockMvc.perform(post("/api/orders")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated());
+
+        // Get the created order
         var createdOrder = orderRepository.findAll().stream().findFirst();
-        if (createdOrder.isEmpty()) {
-            // Skip if no order created in test
-            return;
-        }
+        assert createdOrder.isPresent() : "Order should have been created";
 
         Long orderId = createdOrder.get().getId();
         mockMvc.perform(get("/api/orders/" + orderId)
@@ -188,12 +192,27 @@ class OrderControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser", roles = "USER")
     void testUpdateOrders() throws Exception {
-        // Get first order if exists
+        // Create an order first
+        OrderRequest request = OrderRequest.builder()
+            .customerId(1L)
+            .items(List.of(
+                OrderItemRequest.builder()
+                    .productId(testProduct.getId())
+                    .quantity(1L)
+                    .build()
+            ))
+            .build();
+
+        mockMvc.perform(post("/api/orders")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated());
+
+        // Get the created order
         var orders = orderRepository.findAll();
-        if (orders.isEmpty()) {
-            return; // Skip if no orders
-        }
+        assert !orders.isEmpty() : "Order should have been created";
 
         Long orderId = orders.get(0).getId();
         mockMvc.perform(patch("/api/orders/" + orderId + "/status?status=PROCESSING")
