@@ -6,7 +6,7 @@ import com.storeflow.storeflow_api.entity.UserRole;
 import com.storeflow.storeflow_api.entity.UserStatus;
 import com.storeflow.storeflow_api.repository.UserRepository;
 import com.storeflow.storeflow_api.service.ScheduledJobService;
-import com.storeflow.storeflow_api.service.email.EmailService;
+import com.storeflow.storeflow_api.service.email.HtmlEmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class EmailNotificationE2ETest {
 
     @Autowired
-    private EmailService emailService;
+    private HtmlEmailService emailService;
 
     @Autowired
     private UserRepository userRepository;

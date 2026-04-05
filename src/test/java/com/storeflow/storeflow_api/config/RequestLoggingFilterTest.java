@@ -7,7 +7,7 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
@@ -37,29 +37,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 import com.storeflow.storeflow_api.config.TestMailConfig;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DirtiesContext
+@ActiveProfiles("test")
 @Import(TestMailConfig.class)
-@TestPropertySource(properties = {
-    "spring.datasource.url=jdbc:h2:mem:testdb;MODE=PostgreSQL",
-    "spring.datasource.driverClassName=org.h2.Driver",
-    "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
-    "spring.h2.console.enabled=false",
-    "spring.flyway.enabled=false",
-    "spring.jpa.hibernate.ddl-auto=create-drop",
-    "logging.level.ROOT=INFO",
-    "logging.level.com.storeflow.storeflow_api.config.RequestLoggingFilter=DEBUG",
-    // Mail configuration for testing
-    "spring.mail.host=localhost",
-    "spring.mail.port=3025",
-    "spring.mail.username=test",
-    "spring.mail.password=test",
-    "spring.mail.properties.mail.smtp.auth=false",
-    "spring.mail.properties.mail.smtp.starttls.enable=false",
-    "storeflow.mail.from=test@storeflow.com",
-    "storeflow.mail.from-name=StoreFlow Test"
-})
 class RequestLoggingFilterTest {
 
     @Autowired
