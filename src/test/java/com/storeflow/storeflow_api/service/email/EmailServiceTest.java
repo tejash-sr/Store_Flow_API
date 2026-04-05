@@ -2,8 +2,7 @@ package com.storeflow.storeflow_api.service.email;
 
 import com.storeflow.storeflow_api.StoreflowApiApplication;
 import com.storeflow.storeflow_api.config.TestMailConfig;
-import com.storeflow.storeflow_api.service.email.dto.*;
-import jakarta.mail.MessagingException;
+import com.storeflow.storeflow_api.service.email.HtmlEmailService.OrderItem;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
@@ -32,6 +32,7 @@ import static org.awaitility.Awaitility.await;
  * @version 1.0
  */
 @SpringBootTest(classes = StoreflowApiApplication.class)
+@ActiveProfiles("test")
 @Import(TestMailConfig.class)
 @TestPropertySource(properties = {
     "spring.mail.host=localhost",
@@ -80,8 +81,10 @@ class EmailServiceTest {
      */
     private MimeMessage getLastSentMessage() {
         try {
+            await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
+                assertThat(TestMailConfig.getSentMessages()).isNotEmpty());
+
             var messages = TestMailConfig.getSentMessages();
-            assertThat(messages).isNotEmpty();
             return messages.get(messages.size() - 1);
         } catch (Exception e) {
             throw new AssertionError("Failed to get last sent message: " + e.getMessage(), e);
@@ -254,9 +257,9 @@ class EmailServiceTest {
         String toEmail = "customer@example.com";
         String customerName = "Alice Johnson";
         String orderNumber = "ORD-123456";
-        List<EmailService.OrderItem> items = List.of(
-            new EmailService.OrderItem("Product A", 2, "50.00"),
-            new EmailService.OrderItem("Product B", 1, "75.00")
+        List<OrderItem> items = List.of(
+            new OrderItem("Product A", 2, "50.00"),
+            new OrderItem("Product B", 1, "75.00")
         );
         String totalAmount = "175.00";
         String deliveryAddress = "123 Main St, City, State 12345";
@@ -277,9 +280,9 @@ class EmailServiceTest {
         String toEmail = "customer@test.com";
         String customerName = "Bob Wilson";
         String orderNumber = "ORD-789012";
-        List<EmailService.OrderItem> items = List.of(
-            new EmailService.OrderItem("Laptop", 1, "1200.00"),
-            new EmailService.OrderItem("Mouse", 2, "25.00")
+        List<OrderItem> items = List.of(
+            new OrderItem("Laptop", 1, "1200.00"),
+            new OrderItem("Mouse", 2, "25.00")
         );
         String totalAmount = "1250.00";
         String deliveryAddress = "456 Oak Ave, Town, State 54321";
@@ -430,7 +433,7 @@ class EmailServiceTest {
         String toEmail = "customer@example.com";
         String customerName = "Empty Order";
         String orderNumber = "ORD-EMPTY";
-        List<EmailService.OrderItem> items = List.of(); // Empty list
+        List<OrderItem> items = List.of(); // Empty list
         String totalAmount = "0.00";
         String deliveryAddress = "123 Test St";
 
@@ -449,8 +452,7 @@ class EmailServiceTest {
         emailService.sendWelcomeEmail("user3@test.com", "User 3", "link3");
 
         // When/Then - All emails should be received with async processing
-        sleep(300);
-        var messages = TestMailConfig.getSentMessages();
-        assertThat(messages).hasSizeGreaterThanOrEqualTo(3);
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
+            assertThat(TestMailConfig.getSentMessages()).hasSizeGreaterThanOrEqualTo(3));
     }
 }
