@@ -122,13 +122,13 @@ public class Order {
     }
 
     /**
-     * Mark order as completed.
+     * Mark order as delivered.
      */
-    public void complete() {
+    public void markAsDelivered() {
         if (!OrderStatus.SHIPPED.equals(status)) {
-            throw new IllegalStateException("Order must be shipped before completion");
+            throw new IllegalStateException("Order must be shipped before marking as delivered");
         }
-        this.status = OrderStatus.COMPLETED;
+        this.status = OrderStatus.DELIVERED;
         this.completedAt = LocalDateTime.now();
     }
 
@@ -145,7 +145,7 @@ public class Order {
      * Check if order can be cancelled.
      */
     public Boolean canBeCancelled() {
-        return OrderStatus.PENDING.equals(status) || OrderStatus.PROCESSING.equals(status);
+        return OrderStatus.PENDING.equals(status) || OrderStatus.CONFIRMED.equals(status);
     }
 
     /**
@@ -159,14 +159,13 @@ public class Order {
     }
 
     /**
-     * OrderStatus enum for order lifecycle.
+     * OrderStatus enum for order lifecycle (matches PDF spec).
      */
     public enum OrderStatus {
-        PENDING,      // Initial state, awaiting processing
-        PROCESSING,   // Being processed
+        PENDING,      // Initial state, awaiting confirmation
+        CONFIRMED,    // Order confirmed and payment verified
         SHIPPED,      // Shipped to customer
         DELIVERED,    // Delivered to customer
-        COMPLETED,    // Completed and closed
         CANCELLED     // Cancelled order
     }
 }
