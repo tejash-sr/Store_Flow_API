@@ -51,8 +51,8 @@ public class Order {
     @Column(length = 20)
     private String customerPhone;
 
-    @Column(length = 500)
-    private String shippingAddress;
+    @Embedded
+    private ShippingAddress shippingAddress;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
