@@ -1,5 +1,8 @@
 package com.storeflow.storeflow_api.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.storeflow.storeflow_api.dto.InventoryAlertDTO;
 import com.storeflow.storeflow_api.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/alerts")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Alerts", description = "Real-time inventory alerts and notifications via WebSocket")
 public class AlertController {
 
     private final NotificationService notificationService;
