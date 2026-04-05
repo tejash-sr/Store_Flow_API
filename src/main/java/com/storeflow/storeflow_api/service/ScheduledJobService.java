@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.storeflow.storeflow_api.service.email.EmailService;
+import com.storeflow.storeflow_api.service.email.HtmlEmailService;
 import com.storeflow.storeflow_api.repository.OrderRepository;
 import com.storeflow.storeflow_api.repository.UserRepository;
 
@@ -32,7 +32,7 @@ import java.time.LocalTime;
 @RequiredArgsConstructor
 public class ScheduledJobService {
 
-    private final EmailService emailService;
+    private final HtmlEmailService emailService;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 

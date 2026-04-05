@@ -121,3 +121,7 @@ logging:
     org.hibernate: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+
+jwt:
+  secret: your-super-secret-key-minimum-32-chars-long-for-dev-only

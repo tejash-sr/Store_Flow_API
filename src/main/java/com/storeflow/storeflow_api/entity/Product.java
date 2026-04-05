@@ -46,6 +46,10 @@ public class Product {
     @Column(precision = 10, scale = 2)
     private BigDecimal cost;
 
+    @Column(name = "stock_quantity", nullable = false)
+    @Builder.Default
+    private Long stockQuantity = 0L;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;

@@ -102,14 +102,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse adjustStock(Long id, Long quantityChange) {
         Product product = productRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+            .orElseThrow(() -> new com.storeflow.storeflow_api.exception.ResourceNotFoundException("Product not found with id: " + id));
 
-        // Note: Actual stock is tracked in InventoryItem
-        // This is a placeholder for Phase 4 when inventory sync is implemented
-        
-        Product updated = productRepository.save(product);
-        return toResponse(updated);
-    }
+        long newQty = product.getStockQuantity() + quantityChange;
+        if (newQty < 0) {
+            throw new com.storeflow.storeflow_api.exception.InsufficientStockException("Stock cannot go below zero. Available: " + product.getStockQuantity());
+        }
+        product.setStockQuantity(newQty);
 
     @Override
     public void deleteProduct(Long id) {

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
  * Sends actual SMTP emails for all transactional notifications.
  * Can be mocked in tests with @MockBean to avoid real email sending.
  */
-@Service
+@Service("primaryEmailService")
 @RequiredArgsConstructor
 @Slf4j
 public class EmailServiceImpl implements EmailService {
