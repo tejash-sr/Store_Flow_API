@@ -45,6 +45,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
      * Find all users with admin role.
      * Used to send admin notifications like daily digest emails.
      */
-    @Query("SELECT u FROM User u WHERE :adminRole MEMBER OF u.roles")
+    @Query("SELECT u FROM User u WHERE 'ROLE_ADMIN' MEMBER OF u.roles")
     List<User> findAllAdmins();
 }
