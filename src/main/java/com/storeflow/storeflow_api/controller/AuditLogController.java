@@ -60,7 +60,7 @@ public class AuditLogController {
     public ResponseEntity<Page<AuditLogDTO>> getAuditLogsForEntityPaginated(
         @PathVariable String entityType,
         @PathVariable Long entityId,
-        @ParameterObject Pageable pageable) {
+        Pageable pageable) {
         log.info("Fetching paginated audit logs for {} with ID: {}", entityType, entityId);
         Page<AuditLog> auditLogs = auditLogService.getAuditLogsForEntity(entityType, entityId, pageable);
         return ResponseEntity.ok(auditLogs.map(this::convertToDTO));
@@ -89,7 +89,7 @@ public class AuditLogController {
     @Operation(summary = "Get paginated audit logs for a user", security = @SecurityRequirement(name = "bearer-jwt"))
     public ResponseEntity<Page<AuditLogDTO>> getAuditLogsForUserPaginated(
         @PathVariable Long userId,
-        @ParameterObject Pageable pageable) {
+        Pageable pageable) {
         log.info("Fetching paginated audit logs for user ID: {}", userId);
         Page<AuditLog> auditLogs = auditLogService.getAuditLogsForUser(userId, pageable);
         return ResponseEntity.ok(auditLogs.map(this::convertToDTO));
@@ -151,7 +151,7 @@ public class AuditLogController {
     public ResponseEntity<Page<AuditLogDTO>> getAuditLogsInDateRangePaginated(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
-        @ParameterObject Pageable pageable) {
+        Pageable pageable) {
         log.info("Fetching paginated audit logs in date range: {} to {}", startDate, endDate);
         Page<AuditLog> auditLogs = auditLogService.getAuditLogsInDateRange(startDate, endDate, pageable);
         return ResponseEntity.ok(auditLogs.map(this::convertToDTO));
@@ -163,7 +163,7 @@ public class AuditLogController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get all audit logs (paginated)", security = @SecurityRequirement(name = "bearer-jwt"))
-    public ResponseEntity<Page<AuditLogDTO>> getAllAuditLogs(@ParameterObject Pageable pageable) {
+    public ResponseEntity<Page<AuditLogDTO>> getAllAuditLogs(Pageable pageable) {
         log.info("Fetching all audit logs");
         Page<AuditLog> auditLogs = auditLogService.getAllAuditLogs(pageable);
         return ResponseEntity.ok(auditLogs.map(this::convertToDTO));
@@ -178,10 +178,10 @@ public class AuditLogController {
             .entityType(auditLog.getEntityType())
             .entityId(auditLog.getEntityId())
             .action(auditLog.getAction())
-            .userId(auditLog.getUser() != null ? auditLog.getUser().getId() : null)
-            .userName(auditLog.getUser() != null ? auditLog.getUser().getName() : null)
-            .adminId(auditLog.getAdmin() != null ? auditLog.getAdmin().getId() : null)
-            .adminName(auditLog.getAdmin() != null ? auditLog.getAdmin().getName() : null)
+            .userId(auditLog.getUser() != null ? auditLog.getUser().getId().toString() : null)
+            .userName(auditLog.getUser() != null ? auditLog.getUser().getFullName() : null)
+            .adminId(auditLog.getAdmin() != null ? auditLog.getAdmin().getId().toString() : null)
+            .adminName(auditLog.getAdmin() != null ? auditLog.getAdmin().getFullName() : null)
             .oldValue(auditLog.getOldValue())
             .newValue(auditLog.getNewValue())
             .timestamp(auditLog.getTimestamp())

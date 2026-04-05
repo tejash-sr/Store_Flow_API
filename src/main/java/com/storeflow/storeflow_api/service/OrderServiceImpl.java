@@ -219,7 +219,7 @@ public class OrderServiceImpl implements OrderService {
             .status(order.getStatus().name())
             .totalAmount(order.getTotal())
             .items(items)
-            .shippingAddress(order.getShippingAddress())
+            .shippingAddress(order.getShippingAddress() != null ? order.getShippingAddress().toString() : null)
             .createdAt(order.getCreatedAt())
             .updatedAt(order.getUpdatedAt())
             .build();
