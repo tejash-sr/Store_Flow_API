@@ -38,9 +38,9 @@ public class ScheduledJobService {
 
     /**
      * Send daily digest emails to admins at 9:00 AM every day.
-     * Cron: "0 9 * * *" = 09:00 AM every day
+     * Cron: "0 0 9 * * *" = 09:00:00 every day (seconds, minutes, hours, day, month, day-of-week)
      */
-    @Scheduled(cron = "0 9 * * *")
+    @Scheduled(cron = "0 0 9 * * *")
     public void sendDailyDigestEmails() {
         try {
             log.info("Starting daily digest email job");
