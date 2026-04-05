@@ -109,6 +109,8 @@ public class ProductServiceImpl implements ProductService {
             throw new com.storeflow.storeflow_api.exception.InsufficientStockException("Stock cannot go below zero. Available: " + product.getStockQuantity());
         }
         product.setStockQuantity(newQty);
+        return toResponse(productRepository.save(product));
+    }
 
     @Override
     public void deleteProduct(Long id) {

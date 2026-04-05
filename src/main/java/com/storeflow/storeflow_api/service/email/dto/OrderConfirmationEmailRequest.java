@@ -1,6 +1,5 @@
 package com.storeflow.storeflow_api.service.email.dto;
 
-import com.storeflow.storeflow_api.service.email.EmailService;
 import lombok.Builder;
 import lombok.Data;
 import java.util.List;
@@ -16,7 +15,15 @@ public class OrderConfirmationEmailRequest {
     private String toEmail;
     private String customerName;
     private String orderNumber;
-    private List<EmailService.OrderItem> items;
+    private List<OrderItemDTO> items;
     private String totalAmount;
     private String deliveryAddress;
+    
+    @Data
+    @Builder
+    public static class OrderItemDTO {
+        private String productName;
+        private String quantity;
+        private String price;
+    }
 }
