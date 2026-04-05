@@ -50,7 +50,7 @@ jobs:
           cache: maven
       
       - name: 📦 Cache Maven dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -66,11 +66,9 @@ jobs:
       
       - name: 🏗️ Build project
         run: ./mvnw clean package -DskipTests -q --no-transfer-progress
-        working-directory: ./storeflow-api
       
       - name: 🧪 Run tests
         run: ./mvnw test -q --no-transfer-progress
-        working-directory: ./storeflow-api
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/storeflow_test
           SPRING_DATASOURCE_USERNAME: storeflow
@@ -80,11 +78,11 @@ jobs:
         if: always()
         run: |
           mkdir -p test-results
-          cp -r storeflow-api/target/surefire-reports/* test-results/ || true
+          cp -r target/surefire-reports/* test-results/ || true
       
       - name: 📤 Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: test-results/
@@ -94,6 +92,6 @@ jobs:
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: storeflow-api/target/surefire-reports/TEST-*.xml
+          files: target/surefire-reports/TEST-*.xml
           check_name: Test Results
           comment_on_pr: true
