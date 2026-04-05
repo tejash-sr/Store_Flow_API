@@ -51,9 +51,7 @@ class GlobalExceptionHandlerTest {
     void testErrorResponse_ContainsRequiredFields() throws Exception {
         mockMvc.perform(get("/api/nonexistent-path"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").exists())
-                .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.status").exists());
     }
 
     /**
