@@ -1,36 +1,35 @@
 package com.storeflow.storeflow_api.graphql;
 
 import com.storeflow.storeflow_api.dto.ProductResponse;
-import com.storeflow.storeflow_api.entity.Category;
 import com.storeflow.storeflow_api.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * GraphQL Product Query Resolver
+ * GraphQL Query Resolver
  * Handles product queries and nested field resolution
+ * REST and GraphQL APIs work simultaneously
  */
 @Slf4j
 @Controller
+@RequiredArgsConstructor
 public class ProductResolver {
     
     private final ProductService productService;
     
-    public ProductResolver(ProductService productService) {
-        this.productService = productService;
-    }
-    
     /**
      * Query: products - Get paginated list of products with filters
+     * @return ProductPage with content and pagination info
      */
     @QueryMapping
     public Map<String, Object> products(
@@ -47,14 +46,15 @@ public class ProductResolver {
         size = size != null && size <= 100 ? size : 20;
         sort = sort != null ? sort : "createdAt,desc";
         
+        log.info("GraphQL: Fetching products - page: {}, size: {}, filters: name={}, status={}", page, size, name, status);
+        
         // Parse sort string
         String[] sortParts = sort.split(",");
-        Sort.Direction direction = sortParts.length > 1 && "asc".equals(sortParts[1]) 
+        Sort.Direction direction = sortParts.length > 1 && "asc".equalsIgnoreCase(sortParts[1]) 
                 ? Sort.Direction.ASC : Sort.Direction.DESC;
         String sortBy = sortParts[0];
         
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        
         Page<ProductResponse> productPage = productService.getAllProducts(pageRequest, name, status);
         
         return buildProductPageResponse(productPage);
@@ -65,15 +65,8 @@ public class ProductResolver {
      */
     @QueryMapping
     public ProductResponse product(@Argument Long id) {
+        log.info("GraphQL: Fetching product with id: {}", id);
         return productService.getProductById(id).orElse(null);
-    }
-    
-    /**
-     * SchemaMapping: category - Resolve category field for Product type
-     */
-    @SchemaMapping(typeName = "Product")
-    public Category category(ProductResponse product) {
-        return product.getCategory();
     }
     
     /**
