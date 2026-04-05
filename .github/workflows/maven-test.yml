@@ -17,6 +17,10 @@ env:
   JAVA_VERSION: '21'
   MAVEN_VERSION: '3.9.0'
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -93,6 +97,7 @@ jobs:
       
       - name: 📈 Publish test results
         if: always()
+        continue-on-error: true
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: target/surefire-reports/TEST-*.xml
