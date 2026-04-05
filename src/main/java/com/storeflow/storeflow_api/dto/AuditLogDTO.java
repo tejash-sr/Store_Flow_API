@@ -25,11 +25,11 @@ public class AuditLogDTO {
 
     private String action;
 
-    private Long userId;
+    private String userId;
 
     private String userName;
 
-    private Long adminId;
+    private String adminId;
 
     private String adminName;
 

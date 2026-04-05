@@ -59,7 +59,7 @@ public class PdfGenerationService {
 
                 // Shipping Address
                 yPosition = writeText(contentStream, "SHIPPING ADDRESS", PDType1Font.HELVETICA_BOLD, 12, yPosition);
-                yPosition = writeText(contentStream, order.getShippingAddress(), 
+                yPosition = writeText(contentStream, order.getShippingAddress() != null ? order.getShippingAddress().toString() : "N/A", 
                     PDType1Font.HELVETICA, 10, yPosition);
                 yPosition -= 15;
 
