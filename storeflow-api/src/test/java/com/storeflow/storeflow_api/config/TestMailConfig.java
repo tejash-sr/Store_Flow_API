@@ -3,6 +3,7 @@ package com.storeflow.storeflow_api.config;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessagePreparator;
@@ -20,9 +21,9 @@ import static org.mockito.Mockito.*;
  * Captures all sent email messages in a thread-safe list for verification in tests.
  * This allows tests to verify email content without requiring a real SMTP server.
  * 
- * NOTE: This is NOT a @Configuration class - it must be explicitly imported
- * using @Import(TestMailConfig.class) to be activated.
+ * Uses @TestConfiguration so it's only loaded in test contexts when explicitly imported.
  */
+@TestConfiguration
 public class TestMailConfig {
 
     // Thread-safe list to capture sent messages
