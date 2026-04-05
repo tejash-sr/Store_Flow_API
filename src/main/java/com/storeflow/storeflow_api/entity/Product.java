@@ -66,6 +66,11 @@ public class Product {
     @ToString.Exclude
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @Builder.Default
+    private List<Promotion> promotions = new ArrayList<>();
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -131,5 +136,46 @@ public class Product {
             inventoryItems.add(item);
             item.setProduct(this);
         }
+    }
+
+    /**
+     * Add promotion to product.
+     */
+    public void addPromotion(Promotion promotion) {
+        if (!promotions.contains(promotion)) {
+            promotions.add(promotion);
+            promotion.setProduct(this);
+        }
+    }
+
+    /**
+     * Remove promotion from product.
+     */
+    public void removePromotion(Promotion promotion) {
+        if (promotions.contains(promotion)) {
+            promotions.remove(promotion);
+            //promotion.setProduct(null);
+        }
+    }
+
+    /**
+     * Get the active promotion for this product (if any).
+     */
+    public Promotion getActivePromotion() {
+        return promotions.stream()
+            .filter(Promotion::isActive)
+            .findFirst()
+            .orElse(null);
+    }
+
+    /**
+     * Get the discounted price if promotion is active.
+     */
+    public BigDecimal getPriceWithPromotion() {
+        Promotion activePromo = getActivePromotion();
+        if (activePromo != null) {
+            return activePromo.calculateDiscountedPrice(price);
+        }
+        return price;
     }
 }
