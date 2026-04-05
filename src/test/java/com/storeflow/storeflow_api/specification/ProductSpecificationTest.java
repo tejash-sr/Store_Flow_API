@@ -308,47 +308,4 @@ class ProductSpecificationTest {
         assertThat(results.getTotalPages()).isEqualTo(2);
     }
 }
-        var spec = ProductSpecification.withFilters(null, 1L, null, null, true);
-        assertNotNull(spec, "Specification should not be null");
-    }
-
-    /**
-     * Test withFilters specification with all null criteria
-     */
-    @Test
-    void testWithFiltersSpecification_WithAllNullCriteria() {
-        // Act
-        var spec = ProductSpecification.withFilters(null, null, null, null, null);
-        assertNotNull(spec, "Specification should not be null");
-    }
-
-    /**
-     * Test specification composition with and()
-     */
-    @Test
-    void testSpecificationComposition_WithAnd() {
-        // Arrange
-        var spec1 = ProductSpecification.nameContains("Laptop");
-        var spec2 = ProductSpecification.isActive();
-
-        // Act - Specifications can be combined using and()
-        var combined = spec1.and(spec2);
-        assertNotNull(combined, "Combined specification should not be null");
-    }
-
-    /**
-     * Test specification composition with or()
-     */
-    @Test
-    void testSpecificationComposition_WithOr() {
-        // Arrange
-        var spec1 = ProductSpecification.isActiveEquals(true);
-        var spec2 = ProductSpecification.isActiveEquals(false);
-
-        // Act - Specifications can be combined using or()
-        var combined = spec1.or(spec2);
-        assertNotNull(combined, "Combined specification should not be null");
-    }
-
-}
 
