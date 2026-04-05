@@ -64,6 +64,9 @@ jobs:
             sleep 1
           done
       
+      - name: 🔑 Make Maven executable
+        run: chmod +x ./mvnw
+      
       - name: 🏗️ Build project
         run: ./mvnw clean package -DskipTests -q --no-transfer-progress
       
@@ -94,4 +97,3 @@ jobs:
         with:
           files: target/surefire-reports/TEST-*.xml
           check_name: Test Results
-          comment_on_pr: true
