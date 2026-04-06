@@ -65,7 +65,7 @@ class UserRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    void emailUniqueness_databaseConstraintPrevencesDuplicates() {
+    void emailUniqueness_databaseConstraintPreventsDuplicates() {
         userRepository.saveAndFlush(buildUser("dup@example.com", "First"));
 
         assertThatThrownBy(() ->

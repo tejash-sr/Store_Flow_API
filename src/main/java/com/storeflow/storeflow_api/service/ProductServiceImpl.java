@@ -127,8 +127,7 @@ public class ProductServiceImpl implements ProductService {
             .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
             .category(product.getCategory())
             .imageUrl(product.getImageUrl())
-            .status(product.getStatus() != null ? product.getStatus()
-                : (product.getIsActive() ? ProductStatus.ACTIVE : ProductStatus.INACTIVE))
+            .status(product.getStatus() != null ? product.getStatus() : ProductStatus.ACTIVE)
             .createdAt(product.getCreatedAt())
             .updatedAt(product.getUpdatedAt())
             .build();
