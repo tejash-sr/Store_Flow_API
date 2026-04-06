@@ -6,10 +6,14 @@ import com.storeflow.storeflow_api.dto.OrderItemRequest;
 import com.storeflow.storeflow_api.dto.OrderRequest;
 import com.storeflow.storeflow_api.entity.Category;
 import com.storeflow.storeflow_api.entity.Product;
+import com.storeflow.storeflow_api.entity.User;
+import com.storeflow.storeflow_api.entity.UserRole;
+import com.storeflow.storeflow_api.entity.UserStatus;
 import com.storeflow.storeflow_api.entity.Store;
 import com.storeflow.storeflow_api.repository.CategoryRepository;
 import com.storeflow.storeflow_api.repository.OrderRepository;
 import com.storeflow.storeflow_api.repository.ProductRepository;
+import com.storeflow.storeflow_api.repository.UserRepository;
 import com.storeflow.storeflow_api.repository.StoreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -38,6 +43,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(TestMailConfig.class)
 @Transactional
 class OrderControllerTest {
+
+    private static final String TEST_USER_EMAIL = "testuser@example.com";
 
     @Autowired
     private MockMvc mockMvc;
@@ -56,6 +63,9 @@ class OrderControllerTest {
 
     @Autowired
     private StoreRepository storeRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private Product testProduct;
     private Store testStore;
@@ -89,10 +99,18 @@ class OrderControllerTest {
             .category(category)
             .isActive(true)
             .build());
+
+        userRepository.save(User.builder()
+            .email(TEST_USER_EMAIL)
+            .password("password")
+            .fullName("Test User")
+            .roles(Set.of(UserRole.ROLE_USER))
+            .status(UserStatus.ACTIVE)
+            .build());
     }
 
     @Test
-    @WithMockUser(username = "testuser", roles = "USER")
+    @WithMockUser(username = TEST_USER_EMAIL, roles = "USER")
     void testPlaceOrderSuccess() throws Exception {
         OrderRequest request = OrderRequest.builder()
             .customerId(1L)
@@ -113,7 +131,7 @@ class OrderControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser", roles = "USER")
+    @WithMockUser(username = TEST_USER_EMAIL, roles = "USER")
     void testPlaceOrderEmptyItems() throws Exception {
         OrderRequest request = OrderRequest.builder()
             .customerId(1L)
@@ -127,7 +145,7 @@ class OrderControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser", roles = "USER")
+    @WithMockUser(username = TEST_USER_EMAIL, roles = "USER")
     void testPlaceOrderProductNotFound() throws Exception {
         OrderRequest request = OrderRequest.builder()
             .customerId(1L)
@@ -146,7 +164,7 @@ class OrderControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser", roles = "USER")
+    @WithMockUser(username = TEST_USER_EMAIL, roles = "USER")
     void testGetAllOrders() throws Exception {
         mockMvc.perform(get("/api/orders")
             .contentType(MediaType.APPLICATION_JSON))
@@ -155,7 +173,7 @@ class OrderControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser", roles = "USER")
+    @WithMockUser(username = TEST_USER_EMAIL, roles = "USER")
     void testGetOrderByIdSuccess() throws Exception {
         // Create an order first
         OrderRequest request = OrderRequest.builder()
@@ -185,7 +203,7 @@ class OrderControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser", roles = "USER")
+    @WithMockUser(username = TEST_USER_EMAIL, roles = "USER")
     void testGetOrderByIdNotFound() throws Exception {
         mockMvc.perform(get("/api/orders/99999")
             .contentType(MediaType.APPLICATION_JSON))
@@ -193,7 +211,7 @@ class OrderControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser", roles = "USER")
+    @WithMockUser(username = TEST_USER_EMAIL, roles = "ADMIN")
     void testUpdateOrders() throws Exception {
         // Create an order first
         OrderRequest request = OrderRequest.builder()
@@ -216,9 +234,9 @@ class OrderControllerTest {
         assert !orders.isEmpty() : "Order should have been created";
 
         Long orderId = orders.get(0).getId();
-        mockMvc.perform(patch("/api/orders/" + orderId + "/status?status=PROCESSING")
+        mockMvc.perform(patch("/api/orders/" + orderId + "/status?status=CONFIRMED")
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("PROCESSING"));
+            .andExpect(jsonPath("$.status").value("CONFIRMED"));
     }
 }
