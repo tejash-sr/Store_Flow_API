@@ -18,7 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Tests for GlobalExceptionHandler error response mapping.
- * Validates exception handling through Spring's exception translation layer.
+ * Per Phase 5 specification: validates exception handling and HTTP status codes.
+ * Per audit.md: Add unit tests for each exception type in @ControllerAdvice.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,40 +30,50 @@ class GlobalExceptionHandlerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    /**
+     * Test that unknown routes return 404 with error response.
+     * Per Phase 5: global error handler returns consistent JSON shape.
+     */
     @Test
     @WithMockUser
-    void shouldThrowResourceNotFoundExceptionWith404Status() throws Exception {
-        mockMvc.perform(get("/test-exception/not-found")
+    void testNotFound_Returns404() throws Exception {
+        mockMvc.perform(get("/api/nonexistent-path")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Test that error responses include required fields.
+     * Per audit requirement: verify the error response structure.
+     */
     @Test
     @WithMockUser
-    void shouldReturnErrorResponseForResourceNotFound() throws Exception {
+    void testErrorResponse_ContainsRequiredFields() throws Exception {
+        mockMvc.perform(get("/api/nonexistent-path"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").exists());
+    }
+
+    /**
+     * Test that ResourceNotFoundException returns 404.
+     * Per Phase 5: correct HTTP status mapping.
+     */
+    @Test
+    @WithMockUser
+    void testResourceNotFound_Returns404Status() throws Exception {
         mockMvc.perform(get("/test-exception/not-found"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
     }
 
-    @Test
-    @WithMockUser(username = "user", roles = "USER")
-    void shouldReturn404ForUnmappedErrorEndpoint() throws Exception {
-        mockMvc.perform(get("/unmapped/error")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
-
+    /**
+     * Test controller that throws exceptions for testing.
+     */
     @RestController
-    static class TestController {
+    static class TestExceptionController {
         @GetMapping("/test-exception/not-found")
         public void throwNotFound() {
             throw new ResourceNotFoundException("Resource not found");
-        }
-
-        @GetMapping("/test-exception/error")
-        public void throwRuntimeException() {
-            throw new RuntimeException("Test runtime exception");
         }
     }
 }

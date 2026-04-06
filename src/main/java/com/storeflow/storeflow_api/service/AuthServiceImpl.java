@@ -22,16 +22,24 @@ import java.util.stream.Collectors;
  * Handles user registration, login, token refresh, and password reset flows.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
-    
-    @org.springframework.beans.factory.annotation.Qualifier("primaryEmailService")
     private final EmailService emailService;
+
+    public AuthServiceImpl(
+            UserRepository userRepository,
+            JwtUtil jwtUtil,
+            PasswordEncoder passwordEncoder,
+            @org.springframework.beans.factory.annotation.Qualifier("primaryEmailService") EmailService emailService) {
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
 
     /**
      * Register new user with email, password, and full name.

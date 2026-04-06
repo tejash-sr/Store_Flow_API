@@ -63,6 +63,7 @@ class ProductControllerTest {
             .name("Test Product")
             .sku("TST001")
             .price(BigDecimal.valueOf(99.99))
+            .stockQuantity(100L)
             .category(testCategory)
             .isActive(true)
             .build());

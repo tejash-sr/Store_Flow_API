@@ -51,19 +51,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public Page<ProductResponse> getAllProducts(Pageable pageable, String name, String status) {
-        List<Product> products = productRepository.findByIsActiveTrueOrderByNameAsc();
-        
-        // Client-side filtering for MVP (server-side in Phase 4)
-        List<ProductResponse> responses = products.stream()
-            .map(this::toResponse)
-            .toList();
-
-        // Simple pagination
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), responses.size());
-        List<ProductResponse> pageContent = responses.subList(start, end);
-
-        return new PageImpl<>(pageContent, pageable, responses.size());
+        // Use server-side pagination via JPA
+        Page<Product> products = productRepository.findByIsActiveTrue(pageable);
+        return products.map(this::toResponse);
     }
 
     @Override
