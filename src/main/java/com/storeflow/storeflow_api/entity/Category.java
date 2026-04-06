@@ -1,5 +1,6 @@
 package com.storeflow.storeflow_api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,6 +19,7 @@ import java.util.List;
     @Index(name = "idx_category_name", columnList = "name"),
     @Index(name = "idx_category_active", columnList = "is_active")
 })
+@JsonIgnoreProperties({"products", "subcategories", "parent", "rootCategory"})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -139,6 +141,7 @@ public class Category {
     /**
      * Get the root category in the hierarchy.
      */
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public Category getRootCategory() {
         if (parent == null) {
             return this;

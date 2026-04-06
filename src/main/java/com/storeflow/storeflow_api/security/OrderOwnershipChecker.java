@@ -53,7 +53,7 @@ public class OrderOwnershipChecker {
             
             if (orderOptional.isEmpty()) {
                 log.debug("Order {} not found for ownership check", orderId);
-                return false;
+                return true;
             }
             
             Order order = orderOptional.get();
