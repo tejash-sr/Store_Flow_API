@@ -213,4 +213,96 @@ public class FileStorageService {
         return contentType;
     }
 
+    /**
+     * Resize image bytes to specified dimensions.
+     * Used for avatar processing at custom sizes (e.g., 200x200).
+     * @param imageBytes Original image bytes
+     * @param width Target width in pixels
+     * @param height Target height in pixels
+     * @return Resized image bytes
+     */
+    public byte[] resizeImage(byte[] imageBytes, int width, int height) throws IOException {
+        java.io.ByteArrayInputStream inputStream = new java.io.ByteArrayInputStream(imageBytes);
+        java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
+        
+        try {
+            Thumbnails.of(inputStream)
+                .size(width, height)
+                .keepAspectRatio(true)
+                .toOutputStream(outputStream);
+            
+            return outputStream.toByteArray();
+        } finally {
+            inputStream.close();
+            outputStream.close();
+        }
+    }
+
+    /**
+     * Create a MultipartFile wrapper from raw bytes.
+     * Used internally for wrapping resized image data.
+     * @param bytes Image bytes
+     * @param fileName Original file name
+     * @param contentType MIME type (e.g., "image/jpeg")
+     * @return MultipartFile wrapper
+     */
+    public MultipartFile createMultipartFileFromBytes(byte[] bytes, String fileName, String contentType) {
+        return new ResizedMultipartFile(bytes, fileName, contentType);
+    }
+
+    /**
+     * Internal MultipartFile wrapper for resized image bytes
+     */
+    private static class ResizedMultipartFile implements MultipartFile {
+        private final byte[] bytes;
+        private final String name;
+        private final String contentType;
+
+        ResizedMultipartFile(byte[] bytes, String name, String contentType) {
+            this.bytes = bytes;
+            this.name = name;
+            this.contentType = contentType;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getOriginalFilename() {
+            return name;
+        }
+
+        @Override
+        public String getContentType() {
+            return contentType;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return bytes.length == 0;
+        }
+
+        @Override
+        public long getSize() {
+            return bytes.length;
+        }
+
+        @Override
+        public byte[] getBytes() throws IOException {
+            return bytes;
+        }
+
+        @Override
+        public java.io.InputStream getInputStream() throws IOException {
+            return new java.io.ByteArrayInputStream(bytes);
+        }
+
+        @Override
+        public void transferTo(java.io.File dest) throws IOException, IllegalStateException {
+            java.nio.file.Files.write(dest.toPath(), bytes);
+        }
+    }
+
 }

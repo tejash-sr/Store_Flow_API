@@ -1,6 +1,8 @@
 package com.storeflow.storeflow_api.repository;
 
 import com.storeflow.storeflow_api.entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -37,6 +39,11 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
      * Find all active products.
      */
     List<Product> findByIsActiveTrueOrderByNameAsc();
+
+    /**
+     * Find all active products with pagination and sorting.
+     */
+    Page<Product> findByIsActiveTrue(Pageable pageable);
 
     /**
      * Count active products.

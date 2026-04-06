@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 class ScheduledJobServiceTest {
 
     @Mock
-    private EmailService emailService;
+    private HtmlEmailService emailService;
 
     @Mock
     private OrderRepository orderRepository;

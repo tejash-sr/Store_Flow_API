@@ -54,6 +54,7 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password", "/api/auth/reset-password/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/products/{id}").permitAll()
                 
                 // Actuator endpoints - admin only
                 .requestMatchers("/actuator/**").hasRole("ADMIN")

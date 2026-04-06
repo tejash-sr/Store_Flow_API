@@ -19,6 +19,7 @@ spring:
         format_sql: true
   
   # Disable Flyway for H2 in-memory tests
+  # Migrations are PostgreSQL-specific and won't work in-memory
   flyway:
     enabled: false
     
