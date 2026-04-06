@@ -59,10 +59,10 @@ public class WebSocketIntegrationTest {
         try {
             // Testing that the method exists
             config.getClass().getDeclaredMethod("registerStompEndpoints", StompEndpointRegistry.class);
-            // If we get here, method exists
+            // If method exists without exception, test passes
             assertThat(true).isTrue();
         } catch (NoSuchMethodException e) {
-            assertThat(false).withFailMessage("registerStompEndpoints method should exist").isTrue();
+            throw new AssertionError("registerStompEndpoints method should exist", e);
         }
     }
 
@@ -77,10 +77,9 @@ public class WebSocketIntegrationTest {
         try {
             // Testing that the method exists
             config.getClass().getDeclaredMethod("configureMessageBroker", MessageBrokerRegistry.class);
-            // If we get here, method exists
-            assertThat(true).isTrue();
+            // If method exists without exception, test passes
         } catch (NoSuchMethodException e) {
-            assertThat(false).withFailMessage("configureMessageBroker method should exist").isTrue();
+            throw new AssertionError("configureMessageBroker method should exist", e);
         }
     }
 

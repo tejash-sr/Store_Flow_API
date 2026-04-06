@@ -21,6 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -46,6 +47,7 @@ public class OrderController {
     /**
      * POST /api/orders - Place a new order (atomic transaction).
      */
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<?> placeOrder(@Valid @RequestBody OrderRequest request) {
         try {
@@ -60,6 +62,7 @@ public class OrderController {
     /**
      * GET /api/orders - List all orders with pagination (USER: own, ADMIN: all).
      */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<Page<OrderResponse>> getAllOrders(Pageable pageable) {
         Page<OrderResponse> orders = orderService.getAllOrders(pageable);
@@ -69,6 +72,7 @@ public class OrderController {
     /**
      * GET /api/orders/{id} - Get order details with all order items.
      */
+    @PreAuthorize("@orderOwnershipChecker.isOwner(#id)")
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderById(@PathVariable Long id) {
         Optional<OrderResponse> order = orderService.getOrderById(id);
@@ -82,6 +86,7 @@ public class OrderController {
     /**
      * PATCH /api/orders/{id}/status - Update order status (admin, valid transitions only).
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestParam String status) {
         try {
@@ -96,6 +101,7 @@ public class OrderController {
     /**
      * GET /api/orders/{id}/report - Generate PDF report for an order.
      */
+    @PreAuthorize("@orderOwnershipChecker.isOwner(#id)")
     @GetMapping("/{id}/report")
     public ResponseEntity<?> getOrderReport(@PathVariable Long id) {
         try {
@@ -131,6 +137,7 @@ public class OrderController {
     /**
      * GET /api/orders/export - Export orders as CSV (optionally filtered by date range).
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/export")
     public ResponseEntity<?> exportOrdersAsCsv(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,

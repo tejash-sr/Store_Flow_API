@@ -44,13 +44,21 @@ class OrderRepositoryTest {
             .isActive(true)
             .build());
 
+        ShippingAddress address = ShippingAddress.builder()
+            .street("456 Oak St")
+            .city("Springfield")
+            .state("IL")
+            .postalCode("62701")
+            .country("USA")
+            .build();
+
         testOrder = Order.builder()
             .orderNumber("ORD-001")
             .store(store)
             .customerName("John Doe")
             .customerEmail("john@example.com")
             .customerPhone("5551234567")
-            .shippingAddress("456 Oak St")
+            .shippingAddress(address)
             .status(Order.OrderStatus.PENDING)
             .subtotal(BigDecimal.valueOf(100.00))
             .tax(BigDecimal.valueOf(8.00))
@@ -135,12 +143,12 @@ class OrderRepositoryTest {
         Order saved = orderRepository.save(testOrder);
         assertEquals(Order.OrderStatus.PENDING, saved.getStatus());
 
-        saved.setStatus(Order.OrderStatus.PROCESSING);
+        saved.setStatus(Order.OrderStatus.CONFIRMED);
         orderRepository.save(saved);
 
         Optional<Order> updated = orderRepository.findByOrderNumber("ORD-001");
         assertTrue(updated.isPresent());
-        assertEquals(Order.OrderStatus.PROCESSING, updated.get().getStatus());
+        assertEquals(Order.OrderStatus.CONFIRMED, updated.get().getStatus());
     }
 
     @Test

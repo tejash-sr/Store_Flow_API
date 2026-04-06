@@ -1,16 +1,12 @@
 package com.storeflow.storeflow_api.specification;
 
 import com.storeflow.storeflow_api.entity.Product;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * Unit tests for ProductSpecification
@@ -23,17 +19,15 @@ class ProductSpecificationTest {
      */
     @Test
     void testNameContainsSpecification_WithValidName() {
-        // Arrange - Mock JPA criteria components
-        Root<Product> root = mock(Root.class);
-        CriteriaQuery<?> query = mock(CriteriaQuery.class);
-        CriteriaBuilder cb = mock(CriteriaBuilder.class);
+        // Act - Build the specification
+        Specification<Product> spec = ProductSpecification.nameContains("Laptop");
 
-        // Act
-        var spec = ProductSpecification.nameContains("Laptop");
-        assertNotNull(spec, "Specification should not be null");
+        // Assert - verify the specification is properly defined (not null)
+        assertThat(spec).isNotNull();
 
-        // Assert - verify the specification is properly defined
-        assertTrue(spec.toString().contains("Specification") || spec != null);
+        // Verify toString contains spec information
+        assertThat(spec.toString()).contains("Specification")
+                .as("Specification should have proper toString representation");
     }
 
     /**
@@ -41,15 +35,12 @@ class ProductSpecificationTest {
      */
     @Test
     void testNameContainsSpecification_WithBlankName() {
-        // Arrange
-        Root<Product> root = mock(Root.class);
-        CriteriaQuery<?> query = mock(CriteriaQuery.class);
-        CriteriaBuilder cb = mock(CriteriaBuilder.class);
-        when(cb.conjunction()).thenReturn(mock(Predicate.class));
-
         // Act
-        var spec = ProductSpecification.nameContains("");
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.nameContains("");
+
+        // Assert - Should be non-null (returns conjunction for empty strings)
+        assertThat(spec).isNotNull();
+        assertThat(spec.toString()).contains("Specification");
     }
 
     /**
@@ -58,8 +49,11 @@ class ProductSpecificationTest {
     @Test
     void testNameContainsSpecification_WithNullName() {
         // Act
-        var spec = ProductSpecification.nameContains(null);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.nameContains(null);
+
+        // Assert - Should handle null gracefully and return conjunction
+        assertThat(spec).isNotNull();
+        assertThat(spec.toString()).contains("Specification");
     }
 
     /**
@@ -71,8 +65,11 @@ class ProductSpecificationTest {
         Long categoryId = 1L;
 
         // Act
-        var spec = ProductSpecification.categoryIdEquals(categoryId);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.categoryIdEquals(categoryId);
+
+        // Assert
+        assertThat(spec).isNotNull();
+        assertThat(spec.toString()).contains("Specification");
     }
 
     /**
@@ -81,8 +78,11 @@ class ProductSpecificationTest {
     @Test
     void testCategoryIdEqualsSpecification_WithNullCategoryId() {
         // Act
-        var spec = ProductSpecification.categoryIdEquals(null);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.categoryIdEquals(null);
+
+        // Assert - Should handle null and return conjunction
+        assertThat(spec).isNotNull();
+        assertThat(spec.toString()).contains("Specification");
     }
 
     /**
@@ -95,8 +95,11 @@ class ProductSpecificationTest {
         BigDecimal maxPrice = new BigDecimal("100.00");
 
         // Act
-        var spec = ProductSpecification.priceInRange(minPrice, maxPrice);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.priceInRange(minPrice, maxPrice);
+
+        // Assert
+        assertThat(spec).isNotNull();
+        assertThat(spec.toString()).contains("Specification");
     }
 
     /**
@@ -108,8 +111,10 @@ class ProductSpecificationTest {
         BigDecimal minPrice = new BigDecimal("50.00");
 
         // Act
-        var spec = ProductSpecification.priceInRange(minPrice, null);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.priceInRange(minPrice, null);
+
+        // Assert
+        assertThat(spec).isNotNull();
     }
 
     /**
@@ -121,8 +126,10 @@ class ProductSpecificationTest {
         BigDecimal maxPrice = new BigDecimal("500.00");
 
         // Act
-        var spec = ProductSpecification.priceInRange(null, maxPrice);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.priceInRange(null, maxPrice);
+
+        // Assert
+        assertThat(spec).isNotNull();
     }
 
     /**
@@ -131,8 +138,10 @@ class ProductSpecificationTest {
     @Test
     void testPriceInRangeSpecification_WithNullPrices() {
         // Act
-        var spec = ProductSpecification.priceInRange(null, null);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.priceInRange(null, null);
+
+        // Assert
+        assertThat(spec).isNotNull();
     }
 
     /**
@@ -141,8 +150,11 @@ class ProductSpecificationTest {
     @Test
     void testIsActiveEqualsSpecification_WithTrue() {
         // Act
-        var spec = ProductSpecification.isActiveEquals(true);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.isActiveEquals(true);
+
+        // Assert
+        assertThat(spec).isNotNull();
+        assertThat(spec.toString()).contains("Specification");
     }
 
     /**
@@ -151,8 +163,10 @@ class ProductSpecificationTest {
     @Test
     void testIsActiveEqualsSpecification_WithFalse() {
         // Act
-        var spec = ProductSpecification.isActiveEquals(false);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.isActiveEquals(false);
+
+        // Assert
+        assertThat(spec).isNotNull();
     }
 
     /**
@@ -161,8 +175,10 @@ class ProductSpecificationTest {
     @Test
     void testIsActiveEqualsSpecification_WithNull() {
         // Act
-        var spec = ProductSpecification.isActiveEquals(null);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.isActiveEquals(null);
+
+        // Assert
+        assertThat(spec).isNotNull();
     }
 
     /**
@@ -171,8 +187,11 @@ class ProductSpecificationTest {
     @Test
     void testIsActiveSpecification() {
         // Act
-        var spec = ProductSpecification.isActive();
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.isActive();
+
+        // Assert
+        assertThat(spec).isNotNull();
+        assertThat(spec.toString()).contains("Specification");
     }
 
     /**
@@ -188,8 +207,11 @@ class ProductSpecificationTest {
         Boolean isActive = true;
 
         // Act
-        var spec = ProductSpecification.withFilters(name, categoryId, minPrice, maxPrice, isActive);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.withFilters(name, categoryId, minPrice, maxPrice, isActive);
+
+        // Assert
+        assertThat(spec).isNotNull();
+        assertThat(spec.toString()).contains("Specification");
     }
 
     /**
@@ -198,8 +220,10 @@ class ProductSpecificationTest {
     @Test
     void testWithFiltersSpecification_WithPartialCriteria() {
         // Act
-        var spec = ProductSpecification.withFilters(null, 1L, null, null, true);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.withFilters(null, 1L, null, null, true);
+
+        // Assert
+        assertThat(spec).isNotNull();
     }
 
     /**
@@ -208,8 +232,10 @@ class ProductSpecificationTest {
     @Test
     void testWithFiltersSpecification_WithAllNullCriteria() {
         // Act
-        var spec = ProductSpecification.withFilters(null, null, null, null, null);
-        assertNotNull(spec, "Specification should not be null");
+        Specification<Product> spec = ProductSpecification.withFilters(null, null, null, null, null);
+
+        // Assert
+        assertThat(spec).isNotNull();
     }
 
     /**
@@ -218,12 +244,14 @@ class ProductSpecificationTest {
     @Test
     void testSpecificationComposition_WithAnd() {
         // Arrange
-        var spec1 = ProductSpecification.nameContains("Laptop");
-        var spec2 = ProductSpecification.isActive();
+        Specification<Product> spec1 = ProductSpecification.nameContains("Laptop");
+        Specification<Product> spec2 = ProductSpecification.isActive();
 
         // Act - Specifications can be combined using and()
-        var combined = spec1.and(spec2);
-        assertNotNull(combined, "Combined specification should not be null");
+        Specification<Product> combined = spec1.and(spec2);
+
+        // Assert
+        assertThat(combined).isNotNull();
     }
 
     /**
@@ -232,13 +260,14 @@ class ProductSpecificationTest {
     @Test
     void testSpecificationComposition_WithOr() {
         // Arrange
-        var spec1 = ProductSpecification.isActiveEquals(true);
-        var spec2 = ProductSpecification.isActiveEquals(false);
+        Specification<Product> spec1 = ProductSpecification.isActiveEquals(true);
+        Specification<Product> spec2 = ProductSpecification.isActiveEquals(false);
 
         // Act - Specifications can be combined using or()
-        var combined = spec1.or(spec2);
-        assertNotNull(combined, "Combined specification should not be null");
-    }
+        Specification<Product> combined = spec1.or(spec2);
 
+        // Assert
+        assertThat(combined).isNotNull();
+    }
 }
 
