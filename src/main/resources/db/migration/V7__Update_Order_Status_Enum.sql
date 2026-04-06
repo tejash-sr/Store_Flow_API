@@ -35,8 +35,9 @@ WHERE status_new IS NULL;
 ALTER TABLE orders DROP COLUMN status;
 ALTER TABLE orders RENAME COLUMN status_new TO status;
 
--- 5. Add back constraint
-ALTER TABLE orders MODIFY COLUMN status VARCHAR(20) NOT NULL DEFAULT 'PENDING';
+-- 5. Add back constraint (PostgreSQL syntax)
+ALTER TABLE orders ALTER COLUMN status SET NOT NULL;
+ALTER TABLE orders ALTER COLUMN status SET DEFAULT 'PENDING';
 
 -- Create index on new status column for query performance
 CREATE INDEX IF NOT EXISTS idx_order_status ON orders(status);
