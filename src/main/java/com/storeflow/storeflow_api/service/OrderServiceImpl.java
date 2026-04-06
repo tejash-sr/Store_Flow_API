@@ -156,6 +156,7 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("Order must have at least one item");
         }
 
+        // First pass: validate all items and check stock availability
         for (OrderItemRequest item : request.getItems()) {
             Product product = productRepository.findById(item.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + item.getProductId()));
@@ -164,17 +165,31 @@ public class OrderServiceImpl implements OrderService {
                 throw new IllegalArgumentException("Quantity must be positive");
             }
 
-            // Note: Stock validation would require Store context in actual implementation
-            // For MVP, we skip inventory check
+            // Check stock availability BEFORE placing order
+            if (product.getStockQuantity() == null ||  product.getStockQuantity() < item.getQuantity()) {
+                throw new IllegalArgumentException("Insufficient stock for product: " + product.getName() + 
+                    ". Requested: " + item.getQuantity() + ", Available: " + 
+                    (product.getStockQuantity() != null ? product.getStockQuantity() : 0));
+            }
+        }
+
+        // Second pass: atomically deduct stock for all items
+        for (OrderItemRequest item : request.getItems()) {
+            Product product = productRepository.findById(item.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+            
+            // Deduct stock atomically within transaction
+            product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
+            productRepository.save(product);
         }
     }
 
     private boolean isValidTransition(OrderStatus currentStatus, OrderStatus newStatus) {
         return switch (currentStatus) {
-            case PENDING -> newStatus == OrderStatus.PROCESSING || newStatus == OrderStatus.CANCELLED;
-            case PROCESSING -> newStatus == OrderStatus.SHIPPED || newStatus == OrderStatus.CANCELLED;
+            case PENDING -> newStatus == OrderStatus.CONFIRMED || newStatus == OrderStatus.CANCELLED;
+            case CONFIRMED -> newStatus == OrderStatus.SHIPPED || newStatus == OrderStatus.CANCELLED;
             case SHIPPED -> newStatus == OrderStatus.DELIVERED;
-            case DELIVERED, COMPLETED, CANCELLED -> false;
+            case DELIVERED, CANCELLED -> false;
         };
     }
 
@@ -204,7 +219,7 @@ public class OrderServiceImpl implements OrderService {
             .status(order.getStatus().name())
             .totalAmount(order.getTotal())
             .items(items)
-            .shippingAddress(order.getShippingAddress())
+            .shippingAddress(order.getShippingAddress() != null ? order.getShippingAddress().toString() : null)
             .createdAt(order.getCreatedAt())
             .updatedAt(order.getUpdatedAt())
             .build();

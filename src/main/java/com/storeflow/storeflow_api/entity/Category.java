@@ -1,5 +1,6 @@
 package com.storeflow.storeflow_api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,6 +19,7 @@ import java.util.List;
     @Index(name = "idx_category_name", columnList = "name"),
     @Index(name = "idx_category_active", columnList = "is_active")
 })
+@JsonIgnoreProperties({"products", "subcategories", "parent", "rootCategory"})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -42,6 +44,15 @@ public class Category {
     @ToString.Exclude
     @Builder.Default
     private List<Product> products = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_category_parent"))
+    private Category parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @Builder.Default
+    private List<Category> subcategories = new ArrayList<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -88,5 +99,53 @@ public class Category {
             products.remove(product);
             product.setCategory(null);
         }
+    }
+
+    /**
+     * Set parent category for hierarchical structure.
+     */
+    public void setParentCategory(Category parentCategory) {
+        this.parent = parentCategory;
+        if (parentCategory != null && !parentCategory.subcategories.contains(this)) {
+            parentCategory.subcategories.add(this);
+        }
+    }
+
+    /**
+     * Add subcategory to this category.
+     */
+    public void addSubcategory(Category subcategory) {
+        if (!subcategories.contains(subcategory)) {
+            subcategories.add(subcategory);
+            subcategory.parent = this;
+        }
+    }
+
+    /**
+     * Remove subcategory from this category.
+     */
+    public void removeSubcategory(Category subcategory) {
+        if (subcategories.contains(subcategory)) {
+            subcategories.remove(subcategory);
+            subcategory.parent = null;
+        }
+    }
+
+    /**
+     * Check if this category is a parent of another category.
+     */
+    public boolean isParentOf(Category other) {
+        return other.parent != null && other.parent.equals(this);
+    }
+
+    /**
+     * Get the root category in the hierarchy.
+     */
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public Category getRootCategory() {
+        if (parent == null) {
+            return this;
+        }
+        return parent.getRootCategory();
     }
 }
