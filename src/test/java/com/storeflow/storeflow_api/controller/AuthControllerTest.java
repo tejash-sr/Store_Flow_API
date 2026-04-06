@@ -22,6 +22,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import com.storeflow.storeflow_api.testsupport.AbstractIntegrationTest;
 
 import java.util.HashSet;
 import java.util.List;
@@ -41,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(TestMailConfig.class)
 @Transactional
 @Slf4j
-public class AuthControllerTest {
+public class AuthControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

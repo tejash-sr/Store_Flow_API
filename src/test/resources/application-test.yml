@@ -1,34 +1,20 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-    hikari:
-      maximum-pool-size: 5
-      minimum-idle: 1
-      connection-timeout: 10000
-
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-  
-  # Disable Flyway for H2 in-memory tests
-  # Migrations are PostgreSQL-specific and won't work in-memory
   flyway:
-    enabled: false
-    
+    enabled: true
+    baseline-on-migrate: true
+
 logging:
   level:
     org.springframework.test: DEBUG
     org.hibernate.SQL: DEBUG
-
-
 
 jwt:
   secret: your-super-secret-key-minimum-32-chars-long-for-test-only

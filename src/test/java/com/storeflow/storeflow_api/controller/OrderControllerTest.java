@@ -26,6 +26,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import com.storeflow.storeflow_api.testsupport.AbstractIntegrationTest;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -42,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @Import(TestMailConfig.class)
 @Transactional
-class OrderControllerTest {
+class OrderControllerTest extends AbstractIntegrationTest {
 
     private static final String TEST_USER_EMAIL = "testuser@example.com";
 

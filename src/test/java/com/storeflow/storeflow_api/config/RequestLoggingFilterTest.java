@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import com.storeflow.storeflow_api.testsupport.AbstractIntegrationTest;
 
 import java.util.UUID;
 
@@ -44,7 +45,7 @@ import org.springframework.test.annotation.DirtiesContext;
 @DirtiesContext
 @ActiveProfiles("test")
 @Import(TestMailConfig.class)
-class RequestLoggingFilterTest {
+class RequestLoggingFilterTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

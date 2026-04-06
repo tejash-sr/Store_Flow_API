@@ -1,6 +1,5 @@
 package com.storeflow.storeflow_api.service.email;
 
-import com.storeflow.storeflow_api.StoreflowApiApplication;
 import com.storeflow.storeflow_api.config.TestMailConfig;
 import com.storeflow.storeflow_api.service.email.HtmlEmailService.OrderItem;
 import jakarta.mail.internet.MimeMessage;
@@ -8,10 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
+import com.storeflow.storeflow_api.testsupport.AbstractIntegrationTest;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -31,23 +27,8 @@ import static org.awaitility.Awaitility.await;
  * @author StoreFlow
  * @version 1.0
  */
-@SpringBootTest(classes = StoreflowApiApplication.class)
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
-@TestPropertySource(properties = {
-    "spring.mail.host=localhost",
-    "spring.mail.port=3025",
-    "spring.mail.protocol=smtp",
-    "spring.datasource.url=jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
-    "spring.datasource.driverClassName=org.h2.Driver",
-    "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
-    "spring.jpa.hibernate.ddl-auto=create-drop",
-    "spring.flyway.enabled=false",
-    "app.email.from=test@storeflow.local",
-    "app.email.from-name=TestStoreFlow"
-})
 @DisplayName("EmailService Tests")
-class EmailServiceTest {
+class EmailServiceTest extends AbstractIntegrationTest {
 
     @Autowired
     private HtmlEmailService emailService;

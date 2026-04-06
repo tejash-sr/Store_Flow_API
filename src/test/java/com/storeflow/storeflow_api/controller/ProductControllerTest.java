@@ -18,6 +18,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import com.storeflow.storeflow_api.testsupport.AbstractIntegrationTest;
 
 import java.math.BigDecimal;
 
@@ -32,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @Import(TestMailConfig.class)
 @Transactional
-class ProductControllerTest {
+class ProductControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import com.storeflow.storeflow_api.testsupport.AbstractIntegrationTest;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -37,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @Import(TestMailConfig.class)
 @Transactional
-class FileOperationsControllerIntegrationTest {
+class FileOperationsControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

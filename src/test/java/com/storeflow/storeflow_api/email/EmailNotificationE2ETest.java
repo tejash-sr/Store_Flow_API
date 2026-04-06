@@ -7,6 +7,7 @@ import com.storeflow.storeflow_api.entity.UserStatus;
 import com.storeflow.storeflow_api.repository.UserRepository;
 import com.storeflow.storeflow_api.service.ScheduledJobService;
 import com.storeflow.storeflow_api.service.email.HtmlEmailService;
+import com.storeflow.storeflow_api.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles("test")
 @Import(TestMailConfig.class)
 @DisplayName("Email Notification E2E Integration Tests")
-class EmailNotificationE2ETest {
+class EmailNotificationE2ETest extends AbstractIntegrationTest {
 
     @Autowired
     private HtmlEmailService emailService;

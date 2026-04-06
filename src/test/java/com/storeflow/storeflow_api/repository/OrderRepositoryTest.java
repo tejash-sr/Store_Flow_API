@@ -1,14 +1,11 @@
 package com.storeflow.storeflow_api.repository;
 
-import com.storeflow.storeflow_api.config.TestMailConfig;
 import com.storeflow.storeflow_api.entity.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import com.storeflow.storeflow_api.testsupport.AbstractRepositoryTest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,11 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Integration tests for OrderRepository.
  */
-@SpringBootTest
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
 @Transactional
-class OrderRepositoryTest {
+class OrderRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
     private OrderRepository orderRepository;
