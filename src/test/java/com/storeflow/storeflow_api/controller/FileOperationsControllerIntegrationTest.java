@@ -1,6 +1,6 @@
 package com.storeflow.storeflow_api.controller;
 
-import com.storeflow.storeflow_api.config.TestMailConfig;
+import com.storeflow.storeflow_api.AbstractIntegrationTest;
 import com.storeflow.storeflow_api.entity.*;
 import com.storeflow.storeflow_api.repository.CategoryRepository;
 import com.storeflow.storeflow_api.repository.OrderRepository;
@@ -11,13 +11,8 @@ import com.storeflow.storeflow_api.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -32,16 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Integration tests for file upload/download endpoints
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
 @Transactional
-class FileOperationsControllerIntegrationTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
+class FileOperationsControllerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private ProductRepository productRepository;
 

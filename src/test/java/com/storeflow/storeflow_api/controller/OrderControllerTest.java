@@ -1,7 +1,6 @@
 package com.storeflow.storeflow_api.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.storeflow.storeflow_api.config.TestMailConfig;
+import com.storeflow.storeflow_api.AbstractIntegrationTest;
 import com.storeflow.storeflow_api.dto.OrderItemRequest;
 import com.storeflow.storeflow_api.dto.OrderRequest;
 import com.storeflow.storeflow_api.entity.Category;
@@ -18,13 +17,8 @@ import com.storeflow.storeflow_api.repository.StoreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -37,20 +31,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Integration tests for OrderController REST endpoints.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
 @Transactional
-class OrderControllerTest {
+class OrderControllerTest extends AbstractIntegrationTest {
 
     private static final String TEST_USER_EMAIL = "testuser@example.com";
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private OrderRepository orderRepository;

@@ -40,8 +40,11 @@ public class ProductServiceImpl implements ProductService {
             .description(request.getDescription())
             .sku(request.getSku() != null ? request.getSku().toUpperCase() : null)
             .price(request.getPrice())
+            .stockQuantity(request.getStockQuantity() != null ? request.getStockQuantity() : 0L)
+            .imageUrl(request.getImageUrl())
             .category(category)
             .isActive(true)
+            .status(com.storeflow.storeflow_api.entity.enums.ProductStatus.ACTIVE)
             .build();
 
         Product saved = productRepository.save(product);
@@ -119,12 +122,13 @@ public class ProductServiceImpl implements ProductService {
             .description(product.getDescription())
             .sku(product.getSku())
             .price(product.getPrice())
-            .stockQuantity(0L) // TODO: Get from InventoryItem in Phase 4
+            .stockQuantity(product.getStockQuantity())
             .categoryName(product.getCategory() != null ? product.getCategory().getName() : "Uncategorized")
             .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
             .category(product.getCategory())
-            .imageUrl(null) // TODO: Add imageUrl field to Product in Phase 4
-            .status(product.getIsActive() ? ProductStatus.ACTIVE : ProductStatus.DISCONTINUED)
+            .imageUrl(product.getImageUrl())
+            .status(product.getStatus() != null ? product.getStatus()
+                : (product.getIsActive() ? ProductStatus.ACTIVE : ProductStatus.INACTIVE))
             .createdAt(product.getCreatedAt())
             .updatedAt(product.getUpdatedAt())
             .build();

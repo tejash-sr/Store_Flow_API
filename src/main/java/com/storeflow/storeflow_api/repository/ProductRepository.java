@@ -20,6 +20,11 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     /**
+     * Find product by SKU (case-insensitive).
+     */
+    Optional<Product> findBySkuIgnoreCase(String sku);
+
+    /**
      * Find product by SKU.
      */
     Optional<Product> findBySku(String sku);
@@ -54,6 +59,12 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
      * Check if SKU exists.
      */
     Boolean existsBySku(String sku);
+
+    /**
+     * Find products with stock quantity below the given threshold.
+     */
+    @Query("SELECT p FROM Product p WHERE p.stockQuantity < :threshold")
+    List<Product> findAllByStockQuantityLessThan(@Param("threshold") long threshold);
 
     /**
      * Find products with low inventory across stores.

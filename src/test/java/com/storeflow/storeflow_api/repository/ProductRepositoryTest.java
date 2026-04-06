@@ -1,14 +1,10 @@
 package com.storeflow.storeflow_api.repository;
 
-import com.storeflow.storeflow_api.config.TestMailConfig;
 import com.storeflow.storeflow_api.entity.Category;
 import com.storeflow.storeflow_api.entity.Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -21,11 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * Integration tests for ProductRepository.
  * Tests product data access with pricing and inventory queries.
  */
-@SpringBootTest
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
 @Transactional
-class ProductRepositoryTest {
+class ProductRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
     private ProductRepository productRepository;
@@ -188,5 +181,67 @@ class ProductRepositoryTest {
         Optional<Product> found = productRepository.findBySku("LAPTOP-001");
         assertTrue(found.isPresent());
         assertTrue(found.get().getIsActive());
+    }
+
+    @Test
+    void testFindBySkuIgnoreCase_findsLowerCase() {
+        productRepository.save(testProduct);
+        Optional<Product> found = productRepository.findBySkuIgnoreCase("laptop-001");
+        assertTrue(found.isPresent());
+        assertEquals("Dell XPS Laptop", found.get().getName());
+    }
+
+    @Test
+    void testFindBySkuIgnoreCase_findsMixedCase() {
+        productRepository.save(testProduct);
+        Optional<Product> found = productRepository.findBySkuIgnoreCase("Laptop-001");
+        assertTrue(found.isPresent());
+        assertEquals("LAPTOP-001", found.get().getSku());
+    }
+
+    @Test
+    void testFindAllByStockQuantityLessThan_returnsLowStockProducts() {
+        testProduct.setStockQuantity(3L);
+        productRepository.save(testProduct);
+
+        Product wellStocked = Product.builder()
+                .sku("WELL-001")
+                .name("Well Stocked Product")
+                .price(BigDecimal.valueOf(50))
+                .stockQuantity(100L)
+                .category(electronics)
+                .build();
+        productRepository.save(wellStocked);
+
+        List<Product> lowStock = productRepository.findAllByStockQuantityLessThan(10L);
+        assertTrue(lowStock.stream().anyMatch(p -> "LAPTOP-001".equals(p.getSku())));
+        assertTrue(lowStock.stream().noneMatch(p -> "WELL-001".equals(p.getSku())));
+    }
+
+    @Test
+    void testFindAllByStockQuantityLessThan_returnsEmptyWhenNoneLow() {
+        testProduct.setStockQuantity(50L);
+        productRepository.save(testProduct);
+
+        List<Product> lowStock = productRepository.findAllByStockQuantityLessThan(5L);
+        assertTrue(lowStock.stream().noneMatch(p -> "LAPTOP-001".equals(p.getSku())));
+    }
+
+    @Test
+    void testProductStatusDefaultsToActive() {
+        Product saved = productRepository.save(testProduct);
+        assertNotNull(saved.getStatus());
+        assertEquals(com.storeflow.storeflow_api.entity.enums.ProductStatus.ACTIVE, saved.getStatus());
+    }
+
+    @Test
+    void testSoftDeleteSetsStatusToInactive() {
+        Product saved = productRepository.save(testProduct);
+        saved.softDelete();
+        productRepository.save(saved);
+
+        Optional<Product> found = productRepository.findBySku("LAPTOP-001");
+        assertTrue(found.isPresent());
+        assertEquals(com.storeflow.storeflow_api.entity.enums.ProductStatus.INACTIVE, found.get().getStatus());
     }
 }

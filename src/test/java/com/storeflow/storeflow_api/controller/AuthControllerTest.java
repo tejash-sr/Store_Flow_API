@@ -1,7 +1,6 @@
 package com.storeflow.storeflow_api.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.storeflow.storeflow_api.config.TestMailConfig;
+import com.storeflow.storeflow_api.AbstractIntegrationTest;
 import com.storeflow.storeflow_api.dto.*;
 import com.storeflow.storeflow_api.entity.User;
 import com.storeflow.storeflow_api.entity.UserRole;
@@ -13,14 +12,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
@@ -35,19 +29,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Integration tests for AuthController with JWT authentication and rate limiting.
  * Tests all 7 auth endpoints, JWT validation, and role-based authorization.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
 @Transactional
 @Slf4j
-public class AuthControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+public class AuthControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;

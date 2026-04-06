@@ -1,15 +1,9 @@
 package com.storeflow.storeflow_api.exception;
 
-import com.storeflow.storeflow_api.config.TestMailConfig;
+import com.storeflow.storeflow_api.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,16 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Tests for GlobalExceptionHandler error response mapping.
  * Per Phase 5 specification: validates exception handling and HTTP status codes.
- * Per audit.md: Add unit tests for each exception type in @ControllerAdvice.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
-class GlobalExceptionHandlerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
+class GlobalExceptionHandlerTest extends AbstractIntegrationTest {
 
     /**
      * Test that unknown routes return 404 with error response.

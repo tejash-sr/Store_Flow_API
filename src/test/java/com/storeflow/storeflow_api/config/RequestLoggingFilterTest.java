@@ -1,14 +1,10 @@
 package com.storeflow.storeflow_api.config;
 
+import com.storeflow.storeflow_api.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
@@ -30,24 +26,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Architecture:
  * - @SpringBootTest for full context
  * - MockMvc for HTTP simulation
- * - H2 database for test isolation
+ * - Real PostgreSQL database via Testcontainers
  * 
  * @author StoreFlow
  * @version 1.0
  */
-import com.storeflow.storeflow_api.config.TestMailConfig;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
-
-@SpringBootTest
-@AutoConfigureMockMvc
-@DirtiesContext
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
-class RequestLoggingFilterTest {
-
-    @Autowired
-    private MockMvc mockMvc;
+class RequestLoggingFilterTest extends AbstractIntegrationTest {
 
     private static final String TRACE_ID_HEADER = "X-Trace-Id";
     private static final String TEST_ENDPOINT = "/api/health";

@@ -1,6 +1,6 @@
 package com.storeflow.storeflow_api.service.email;
 
-import com.storeflow.storeflow_api.StoreflowApiApplication;
+import com.storeflow.storeflow_api.AbstractIntegrationTest;
 import com.storeflow.storeflow_api.config.TestMailConfig;
 import com.storeflow.storeflow_api.service.email.HtmlEmailService.OrderItem;
 import jakarta.mail.internet.MimeMessage;
@@ -8,9 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
@@ -20,34 +17,19 @@ import static org.assertj.core.api.Assertions.*;
 import static org.awaitility.Awaitility.await;
 
 /**
- * Unit tests for EmailService.
- * 
- * Uses TestMailConfig with mocked JavaMailSender to verify email content without requiring
- * a real SMTP server. Emails sent by EmailService are captured by the mock for verification.
- * 
- * Tests all 5 email types: welcome, password reset, order confirmed, low-stock, daily digest.
- * Also tests error handling and async behavior.
- * 
- * @author StoreFlow
- * @version 1.0
+ * Integration tests for EmailService.
+ * Uses TestMailConfig with mocked JavaMailSender to verify email content without
+ * requiring a real SMTP server.
  */
-@SpringBootTest(classes = StoreflowApiApplication.class)
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
 @TestPropertySource(properties = {
     "spring.mail.host=localhost",
     "spring.mail.port=3025",
     "spring.mail.protocol=smtp",
-    "spring.datasource.url=jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
-    "spring.datasource.driverClassName=org.h2.Driver",
-    "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
-    "spring.jpa.hibernate.ddl-auto=create-drop",
-    "spring.flyway.enabled=false",
     "app.email.from=test@storeflow.local",
     "app.email.from-name=TestStoreFlow"
 })
 @DisplayName("EmailService Tests")
-class EmailServiceTest {
+class EmailServiceTest extends AbstractIntegrationTest {
 
     @Autowired
     private HtmlEmailService emailService;

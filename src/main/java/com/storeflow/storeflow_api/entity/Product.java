@@ -1,5 +1,6 @@
 package com.storeflow.storeflow_api.entity;
 
+import com.storeflow.storeflow_api.entity.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -19,7 +20,8 @@ import java.util.List;
     @Index(name = "idx_product_sku", columnList = "sku", unique = true),
     @Index(name = "idx_product_name", columnList = "name"),
     @Index(name = "idx_product_category_id", columnList = "category_id"),
-    @Index(name = "idx_product_active", columnList = "is_active")
+    @Index(name = "idx_product_active", columnList = "is_active"),
+    @Index(name = "idx_product_status", columnList = "status")
 })
 @Data
 @NoArgsConstructor
@@ -58,6 +60,14 @@ public class Product {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private ProductStatus status = ProductStatus.ACTIVE;
+
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<InventoryItem> inventoryItems = new ArrayList<>();
@@ -87,6 +97,7 @@ public class Product {
      */
     public void softDelete() {
         this.isActive = false;
+        this.status = ProductStatus.INACTIVE;
         this.deletedAt = LocalDateTime.now();
     }
 
@@ -95,6 +106,7 @@ public class Product {
      */
     public void restore() {
         this.isActive = true;
+        this.status = ProductStatus.ACTIVE;
         this.deletedAt = null;
     }
 

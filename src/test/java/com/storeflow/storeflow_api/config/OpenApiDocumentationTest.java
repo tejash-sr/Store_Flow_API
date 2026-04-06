@@ -1,12 +1,7 @@
 package com.storeflow.storeflow_api.config;
 
+import com.storeflow.storeflow_api.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.Assertions.*;
@@ -20,14 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * - OpenAPI JSON spec is available at /v3/api-docs
  * - Bearer token security scheme is defined
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
-class OpenApiDocumentationTest {
-    
-    @Autowired
-    private MockMvc mockMvc;
+class OpenApiDocumentationTest extends AbstractIntegrationTest {
     
     @Test
     void testSwaggerUiIsAccessible() throws Exception {

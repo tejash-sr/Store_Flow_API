@@ -1,7 +1,6 @@
 package com.storeflow.storeflow_api.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.storeflow.storeflow_api.config.TestMailConfig;
+import com.storeflow.storeflow_api.AbstractIntegrationTest;
 import com.storeflow.storeflow_api.dto.ProductRequest;
 import com.storeflow.storeflow_api.entity.Category;
 import com.storeflow.storeflow_api.entity.Product;
@@ -10,13 +9,8 @@ import com.storeflow.storeflow_api.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -27,18 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Integration tests for ProductController REST endpoints.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
 @Transactional
-class ProductControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+class ProductControllerTest extends AbstractIntegrationTest {
 
     @Autowired
     private ProductRepository productRepository;

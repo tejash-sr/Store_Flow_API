@@ -1,6 +1,6 @@
 package com.storeflow.storeflow_api.email;
 
-import com.storeflow.storeflow_api.config.TestMailConfig;
+import com.storeflow.storeflow_api.AbstractIntegrationTest;
 import com.storeflow.storeflow_api.entity.User;
 import com.storeflow.storeflow_api.entity.UserRole;
 import com.storeflow.storeflow_api.entity.UserStatus;
@@ -11,34 +11,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * End-to-end integration tests for email notification system.
  * Tests complete workflows from user signup through daily digest.
- * 
- * Features tested:
- * 1. Welcome email on user signup
- * 2. Password reset email on forgot password
- * 3. Daily digest email to admins
- * 4. Email service with async processing
- * 5. Repository integration with scheduled jobs
- * 
- * Uses TestMailConfig to provide a JavaMailSender bean during the full
- * application context startup.
- * 
- * @author StoreFlow
- * @version 1.0
  */
-@SpringBootTest
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
 @DisplayName("Email Notification E2E Integration Tests")
-class EmailNotificationE2ETest {
+class EmailNotificationE2ETest extends AbstractIntegrationTest {
 
     @Autowired
     private HtmlEmailService emailService;
