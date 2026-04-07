@@ -1,6 +1,6 @@
 package com.storeflow.storeflow_api.repository;
 
-import com.storeflow.storeflow_api.AbstractRepositoryTest;
+import com.storeflow.AbstractRepositoryTest;
 import com.storeflow.storeflow_api.entity.Store;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
