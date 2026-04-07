@@ -56,7 +56,7 @@ jobs:
         run: ./mvnw clean package -DskipTests -q --no-transfer-progress
       
       - name: 🧪 Run tests
-        run: ./mvnw test -q --no-transfer-progress
+        run: ./mvnw test -q --no-transfer-progress -Dspring.profiles.active=test
       
       - name: 📊 Generate test report
         if: always()
