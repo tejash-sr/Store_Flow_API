@@ -149,6 +149,35 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
+     * Handle DataIntegrityViolationException from database constraints.
+     * Returns 409 Conflict with conflicting field information.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex,
+            WebRequest request) {
+        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
+        
+        String message = "A unique constraint was violated.";
+        String cause = ex.getMostSpecificCause().getMessage();
+        if (cause != null) {
+            if (cause.contains("email")) message = "Email address is already registered.";
+            else if (cause.contains("sku")) message = "SKU already exists.";
+            else if (cause.contains("uk_") || cause.contains("uq_")) message = "Duplicate value for unique constraint.";
+        }
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Conflict")
+                .message(message)
+                .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    /**
      * Catch-all handler for any unhandled exceptions.
      * Returns 500 Internal Server Error.
      */

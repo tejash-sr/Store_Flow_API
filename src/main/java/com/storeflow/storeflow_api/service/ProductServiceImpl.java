@@ -33,13 +33,14 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse createProduct(ProductRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId())
-            .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+            .orElseThrow(() -> new com.storeflow.storeflow_api.exception.ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
 
         Product product = Product.builder()
             .name(request.getName())
             .description(request.getDescription())
             .sku(request.getSku() != null ? request.getSku().toUpperCase() : null)
             .price(request.getPrice())
+            .stockQuantity(request.getStockQuantity() != null ? request.getStockQuantity() : 0L)
             .category(category)
             .isActive(true)
             .build();
@@ -51,9 +52,24 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public Page<ProductResponse> getAllProducts(Pageable pageable, String name, String status) {
-        // Use server-side pagination via JPA
-        Page<Product> products = productRepository.findByIsActiveTrue(pageable);
-        return products.map(this::toResponse);
+        // Build spec with active filter and optional name/status filters
+        Specification<Product> spec = Specification.where(
+            (root, query, cb) -> cb.equal(root.get("isActive"), true)
+        );
+        
+        if (name != null && !name.isBlank()) {
+            spec = spec.and((root, query, cb) -> 
+                cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%")
+            );
+        }
+        
+        if (status != null && !status.isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                cb.like(root.get("status"), status)
+            );
+        }
+        
+        return productRepository.findAll(spec, pageable).map(this::toResponse);
     }
 
     @Override
@@ -74,14 +90,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+            .orElseThrow(() -> new com.storeflow.storeflow_api.exception.ResourceNotFoundException("Product not found with id: " + id));
 
         if (request.getName() != null) product.setName(request.getName());
         if (request.getDescription() != null) product.setDescription(request.getDescription());
         if (request.getPrice() != null) product.setPrice(request.getPrice());
+        if (request.getStockQuantity() != null) product.setStockQuantity(request.getStockQuantity());
         if (request.getCategoryId() != null) {
             Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+                .orElseThrow(() -> new com.storeflow.storeflow_api.exception.ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
             product.setCategory(category);
         }
 
@@ -105,11 +122,20 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(Long id) {
         Product product = productRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+            .orElseThrow(() -> new com.storeflow.storeflow_api.exception.ResourceNotFoundException("Product not found with id: " + id));
 
         product.setIsActive(false);
         product.setDeletedAt(LocalDateTime.now());
         productRepository.save(product);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getLowStockProducts(Long threshold) {
+        return productRepository.findByStockQuantityLessThanAndIsActiveTrueOrderByNameAsc(threshold)
+            .stream()
+            .map(this::toResponse)
+            .toList();
     }
 
     private ProductResponse toResponse(Product product) {
@@ -119,7 +145,7 @@ public class ProductServiceImpl implements ProductService {
             .description(product.getDescription())
             .sku(product.getSku())
             .price(product.getPrice())
-            .stockQuantity(0L) // TODO: Get from InventoryItem in Phase 4
+            .stockQuantity(product.getStockQuantity() != null ? product.getStockQuantity() : 0L)
             .categoryName(product.getCategory() != null ? product.getCategory().getName() : "Uncategorized")
             .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
             .category(product.getCategory())

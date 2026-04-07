@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -49,4 +50,11 @@ public interface ProductService {
      * Soft delete a product (mark as DISCONTINUED).
      */
     void deleteProduct(Long id);
+
+    /**
+     * Get all products with stock below the given threshold for low-stock alerts.
+     * @param threshold Stock level threshold
+     * @return List of products with stock below threshold
+     */
+    List<ProductResponse> getLowStockProducts(Long threshold);
 }

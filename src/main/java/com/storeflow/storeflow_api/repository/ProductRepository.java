@@ -65,6 +65,12 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     List<Product> findProductsWithLowInventory();
 
     /**
+     * Find all active products with stock below the given threshold.
+     * Used for low-stock alerts.
+     */
+    List<Product> findByStockQuantityLessThanAndIsActiveTrueOrderByNameAsc(Long threshold);
+
+    /**
      * Find products from specific category with inventory.
      */
     @Query("SELECT p FROM Product p " +

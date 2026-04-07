@@ -61,10 +61,6 @@ public class Store {
     @ToString.Exclude
     private List<InventoryItem> inventoryItems = new ArrayList<>();
 
-    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
-    private List<Order> orders = new ArrayList<>();
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -99,23 +95,6 @@ public class Store {
         if (!inventoryItems.contains(item)) {
             inventoryItems.add(item);
             item.setStore(this);
-        }
-    }
-
-    /**
-     * Get total orders for this store.
-     */
-    public Long getTotalOrders() {
-        return (long) orders.size();
-    }
-
-    /**
-     * Add order to store.
-     */
-    public void addOrder(Order order) {
-        if (!orders.contains(order)) {
-            orders.add(order);
-            order.setStore(this);
         }
     }
 }

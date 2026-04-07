@@ -12,12 +12,11 @@ import java.util.List;
 
 /**
  * Order entity representing customer orders in the system.
- * Manages order status, totals, and relationships to order items and stores.
+ * Manages order status, totals, and relationships to order items and customers.
  */
 @Entity
 @Table(name = "orders", indexes = {
     @Index(name = "idx_order_number", columnList = "order_number", unique = true),
-    @Index(name = "idx_order_store_id", columnList = "store_id"),
     @Index(name = "idx_order_status", columnList = "status"),
     @Index(name = "idx_order_created_date", columnList = "created_at")
 })
@@ -33,10 +32,6 @@ public class Order {
 
     @Column(nullable = false, unique = true, length = 50)
     private String orderNumber;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "store_id", nullable = false)
-    private Store store;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")

@@ -351,4 +351,24 @@ public class ProductController {
 
         return ResponseEntity.ok(PageResponse.from(results));
     }
+
+    /**
+     * GET /api/products/admin/low-stock - Get products with stock below threshold.
+     * 
+     * Admin-only endpoint for inventory alerts and low-stock reporting.
+     * 
+     * @param threshold stock level threshold (default: 10), only returns products with stock < threshold
+     * @return List of products with stock below threshold, sorted by name
+     */
+    @GetMapping("/admin/low-stock")
+    @Operation(summary = "Get low-stock products", description = "Retrieves all products with stock quantity below the specified threshold. Requires ADMIN role.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved low-stock products"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Admin role required")
+    })
+    public ResponseEntity<java.util.List<ProductResponse>> getLowStockProducts(
+            @RequestParam(defaultValue = "10") Long threshold) {
+        java.util.List<ProductResponse> products = productService.getLowStockProducts(threshold);
+        return ResponseEntity.ok(products);
+    }
 }
