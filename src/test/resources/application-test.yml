@@ -1,11 +1,11 @@
 spring:
   datasource:
-    # H2 In-Memory: For @SpringBootTest integration tests (no Docker needed)
-    # AbstractRepositoryTest overrides this via @DynamicPropertySource to use PostgreSQL
-    url: jdbc:h2:mem:storeflow_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    # Use localhost PostgreSQL for tests (must be running)
+    # Or use Docker service in GitHub Actions
+    url: jdbc:postgresql://localhost:5432/storeflow_test
+    driver-class-name: org.postgresql.Driver
+    username: storeflow
+    password: storeflow123
     hikari:
       maximum-pool-size: 5
       minimum-idle: 1
@@ -13,12 +13,12 @@ spring:
 
   jpa:
     hibernate:
-      # CREATE_DROP: Recreate schema from migrations for each test run
-      ddl-auto: create-drop
+      # VALIDATE: Schema must match Flyway migrations
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
   
   flyway:

@@ -170,13 +170,6 @@
 			<scope>test</scope>
 		</dependency>
 		
-		<!-- H2 In-Memory Database for @SpringBootTest Tests -->
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>test</scope>
-		</dependency>
-		
 		<!-- Greenmail for Email Testing -->
 		<dependency>
 			<groupId>com.icegreen</groupId>
