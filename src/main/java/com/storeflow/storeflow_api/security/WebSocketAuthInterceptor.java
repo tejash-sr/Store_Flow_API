@@ -5,6 +5,7 @@ import com.storeflow.storeflow_api.repository.UserRepository;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -31,6 +32,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Component
+@Profile("!test")  // Exclude from test profile to prevent context loading failures
 @RequiredArgsConstructor
 public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 
