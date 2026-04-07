@@ -70,6 +70,8 @@ jobs:
         run: ./mvnw clean package -DskipTests -q --no-transfer-progress
       
       - name: 🧪 Run tests
+        env:
+          DB_PORT: 5432
         run: ./mvnw test -q --no-transfer-progress
       
       - name: 📊 Generate test report
