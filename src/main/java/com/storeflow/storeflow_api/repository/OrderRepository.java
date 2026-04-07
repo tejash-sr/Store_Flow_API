@@ -24,11 +24,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByOrderNumber(String orderNumber);
 
     /**
-     * Find all orders for a store.
-     */
-    List<Order> findByStore_IdOrderByCreatedAtDesc(Long storeId);
-
-    /**
      * Find orders by status.
      */
     List<Order> findByStatusOrderByCreatedAtDesc(Order.OrderStatus status);
@@ -59,11 +54,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * Count orders by status.
      */
     Long countByStatus(Order.OrderStatus status);
-
-    /**
-     * Count orders for a store.
-     */
-    Long countByStore_Id(Long storeId);
 
     /**
      * Find recent orders (limit 10).
