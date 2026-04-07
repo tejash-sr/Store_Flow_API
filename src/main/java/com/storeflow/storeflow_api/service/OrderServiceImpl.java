@@ -18,12 +18,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 import com.storeflow.storeflow_api.repository.UserRepository;
 import com.storeflow.storeflow_api.entity.User;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,6 +40,8 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final EmailService emailService;
 
     @Override
     public OrderResponse placeOrder(OrderRequest request) {
@@ -148,6 +149,38 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(newStatus);
         Order updated = orderRepository.save(order);
+
+        // Send STOMP notification to all subscribers of order status topic
+        messagingTemplate.convertAndSend(
+            "/topic/orders/" + id + "/status",
+            Map.of("orderId", id, "status", newStatus.name(),
+                   "timestamp", LocalDateTime.now().toString())
+        );
+
+        // Notify the customer via user-specific queue
+        if (updated.getCustomer() != null) {
+            messagingTemplate.convertAndSendToUser(
+                updated.getCustomer().getEmail(),
+                "/queue/notifications",
+                Map.of("type", "ORDER_STATUS", "orderId", id, "status", newStatus.name(),
+                       "timestamp", LocalDateTime.now().toString())
+            );
+        }
+
+        // Send order confirmation email when status changes to CONFIRMED
+        if (newStatus == OrderStatus.CONFIRMED && updated.getCustomerEmail() != null) {
+            try {
+                emailService.sendOrderConfirmationEmail(
+                    updated.getCustomerEmail(),
+                    updated.getCustomerName() != null ? updated.getCustomerName() : "Customer",
+                    updated.getOrderNumber()
+                );
+            } catch (Exception e) {
+                // Log error but don't fail the transaction
+                System.err.println("Failed to send order confirmation email: " + e.getMessage());
+            }
+        }
+
         return toResponse(updated);
     }
 
