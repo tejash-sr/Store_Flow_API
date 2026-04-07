@@ -1,14 +1,10 @@
 package com.storeflow.storeflow_api.exception;
 
-import com.storeflow.storeflow_api.config.TestMailConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,14 +13,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Tests for GlobalExceptionHandler error response mapping.
- * Per Phase 5 specification: validates exception handling and HTTP status codes.
- * Per audit.md: Add unit tests for each exception type in @ControllerAdvice.
+ * Unit tests for GlobalExceptionHandler error response mapping.
+ * 
+ * Uses @WebMvcTest for lightweight testing of exception handling in controller layer.
+ * Tests verify that @ControllerAdvice properly maps exceptions to HTTP status codes.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Import(TestMailConfig.class)
+@WebMvcTest(GlobalExceptionHandlerTest.TestExceptionController.class)
 class GlobalExceptionHandlerTest {
 
     @Autowired
@@ -32,7 +26,6 @@ class GlobalExceptionHandlerTest {
 
     /**
      * Test that unknown routes return 404 with error response.
-     * Per Phase 5: global error handler returns consistent JSON shape.
      */
     @Test
     @WithMockUser
@@ -44,7 +37,6 @@ class GlobalExceptionHandlerTest {
 
     /**
      * Test that error responses include required fields.
-     * Per audit requirement: verify the error response structure.
      */
     @Test
     @WithMockUser
@@ -56,7 +48,6 @@ class GlobalExceptionHandlerTest {
 
     /**
      * Test that ResourceNotFoundException returns 404.
-     * Per Phase 5: correct HTTP status mapping.
      */
     @Test
     @WithMockUser

@@ -57,6 +57,8 @@ jobs:
       
       - name: 🧪 Run tests
         run: ./mvnw test -q --no-transfer-progress
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: true
       
       - name: 📊 Generate test report
         if: always()
