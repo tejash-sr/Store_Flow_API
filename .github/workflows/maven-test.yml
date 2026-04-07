@@ -20,6 +20,7 @@ env:
 permissions:
   contents: read
   checks: write
+  statuses: write
 
 jobs:
   build-and-test:
@@ -92,3 +93,4 @@ jobs:
         with:
           files: target/surefire-reports/TEST-*.xml
           check_name: Test Results
+          compare_to_earlier_commit: true

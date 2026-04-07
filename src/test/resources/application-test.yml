@@ -1,8 +1,9 @@
 spring:
   datasource:
-    # Use localhost PostgreSQL for tests (running on port 5433)
-    # Test container: storeflow-rest-api-test-db
-    url: jdbc:postgresql://localhost:5433/storeflow_test
+    # Use localhost PostgreSQL for tests
+    # GitHub Actions: postgres:15 service on 5432
+    # Local Docker: storeflow-rest-api-test-db on 5433 (override with env var if needed)
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/storeflow_test
     driver-class-name: org.postgresql.Driver
     username: storeflow
     password: storeflow123
