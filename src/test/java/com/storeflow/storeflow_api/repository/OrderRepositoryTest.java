@@ -50,6 +50,7 @@ class OrderRepositoryTest extends AbstractRepositoryTest {
 
         testOrder = Order.builder()
             .orderNumber("ORD-001")
+            .store(store)
             .customerName("John Doe")
             .customerEmail("john@example.com")
             .customerPhone("5551234567")

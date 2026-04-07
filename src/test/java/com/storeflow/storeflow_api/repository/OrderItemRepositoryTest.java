@@ -63,6 +63,7 @@ class OrderItemRepositoryTest extends AbstractRepositoryTest {
 
         order = orderRepository.save(Order.builder()
             .orderNumber("ORD-TEST-001")
+            .store(store)
             .customerName("Test Customer")
             .status(Order.OrderStatus.PENDING)
             .total(BigDecimal.ZERO)

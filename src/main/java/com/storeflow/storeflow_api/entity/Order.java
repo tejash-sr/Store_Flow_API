@@ -37,6 +37,10 @@ public class Order {
     @JoinColumn(name = "customer_id")
     private User customer;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
+
     @Column(length = 100)
     private String customerName;
 
