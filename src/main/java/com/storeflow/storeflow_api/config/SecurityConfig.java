@@ -1,6 +1,7 @@
 package com.storeflow.storeflow_api.config;
 
 import com.storeflow.storeflow_api.security.JwtAuthenticationFilter;
+import com.storeflow.storeflow_api.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +32,15 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtUtil jwtUtil;
+
+    /**
+     * Create JwtAuthenticationFilter bean.
+     */
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtUtil);
+    }
 
     /**
      * Configure HTTP security with JWT authentication.
@@ -93,7 +102,7 @@ public class SecurityConfig {
             )
 
             // Add JWT filter before default authentication filter
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -21,7 +21,6 @@ import java.util.Set;
  * Extracts Bearer token from Authorization header, validates it, and populates SecurityContext.
  * Executed once per request before Spring Security filters.
  */
-@Component
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
