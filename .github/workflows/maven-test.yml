@@ -25,20 +25,8 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: storeflow
-          POSTGRES_PASSWORD: storeflow123
-          POSTGRES_DB: storeflow_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+    # No PostgreSQL service needed - Testcontainers will start Docker PostgreSQL
+    # ubuntu-latest has Docker pre-installed for Testcontainers support
 
     steps:
       - name: ⬇️ Checkout code
@@ -61,13 +49,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       
-      - name: ✅ Wait for PostgreSQL
-        run: |
-          until pg_isready -h localhost -p 5432 -U storeflow; do
-            echo 'Waiting for PostgreSQL...'
-            sleep 1
-          done
-      
       - name: 🔑 Make Maven executable
         run: chmod +x ./mvnw
       
@@ -76,13 +57,6 @@ jobs:
       
       - name: 🧪 Run tests
         run: ./mvnw test -q --no-transfer-progress
-        env:
-          SPRING_PROFILES_ACTIVE: test
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/storeflow_test
-          SPRING_DATASOURCE_USERNAME: storeflow
-          SPRING_DATASOURCE_PASSWORD: storeflow123
-          SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-          SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
       
       - name: 📊 Generate test report
         if: always()
