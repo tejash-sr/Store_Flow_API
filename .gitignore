@@ -1,17 +1,44 @@
 # Help and standard files
 HELP.md
-docs/
+README.md.bak
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Logs and Output Files
+*.log
+*.log.*
+logs/
+log/
+test_output.txt
+test_*.log
+test_*.txt
+error.txt
+error.log
+stdout.txt
+stderr.txt
+*.out
+out/
+
 # File uploads and storage
 uploads/
 test-uploads-*/
-test_output.txt
-test_*.log
-error.txt
+test-uploads/
+temp-uploads/
+temp/
+tmp/
+
+# Build artifacts
+build/
+dist/
+*.jar
+*.war
+*.ear
+*.rar
+*.zip
+!**/src/main/**/build/
+!**/src/test/**/build/
 
 ### STS ###
 .apt_generated
@@ -27,6 +54,17 @@ error.txt
 *.iws
 *.iml
 *.ipr
+*.idea/
+out/
+*.iml
+
+### Eclipse ###
+.metadata
+.classpath
+.project
+bin/
+tmp/
+*.tmp
 
 ### NetBeans ###
 /nbproject/private/
@@ -34,18 +72,130 @@ error.txt
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
+.nb-gradle-properties
 !**/src/main/**/build/
 !**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
+*.code-workspace
+.devcontainer/
 
-### Environment ###
+### Gradle ###
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+local.properties
+
+### Node (if applicable) ###
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+### Environment and Configuration ###
 .env
 .env.local
+.env.*.local
 .env.prod
+.env.test
 application-local.yml
+application-*.properties
+!application.yml
+!application-test.yml
+!application-prod.yml
 
-### JaCoCo ###
+### JaCoCo Code Coverage ###
 *.exec
+jacoco.exec
+.jacoco/
+coverage/
+
+### Java Specific ###
+*.class
+*.ctxt
+.mtj.tmp/
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+*.class
+*.lst
+.attach_pid*
+hs_err_pid*
+
+### Heap Dumps and JVM ###
+*.hprof
+*.jfr
+replay_pid*
+core_*
+*.dump
+
+### Database Files ###
+*.db
+*.sqlite
+*.sqlite3
+*.h2db
+*.h2.db
+*.ldb
+*.mv.db
+
+### OS Specific Files ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+.AppleDouble
+.AppleDB
+.LSOverride
+.TemporaryItems
+
+### Backup and Temporary Files ###
+*.bak
+*.backup
+*.orig
+*.swp
+*.swo
+*.swn
+*~
+.~*
+*.tmp
+*.temp
+
+### MacOS Specific ###
+.AppleDB
+.AppleDesktop
+.apdisk
+
+### Linux Specific ###
+.directory
+.Trash-*
+.Xauthority
+.xsession-errors
+
+### IDE Backup Files ###
+*.idc
+*.rej
+*.conflict
+
+### Misc ###
+.classpath
+.factorypath
+.c9/
+*.cover
+*.ico
+*.pid
+*.seed
+*.pid.lock
+.rpt2_cache/
+.rts2_cache_*/
+.tern-port
