@@ -221,6 +221,10 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.1.2</version>
 				<configuration>
+					<!-- Run tests sequentially to prevent ApplicationContext collision -->
+					<parallel>none</parallel>
+					<threadCount>1</threadCount>
+					<reuseForks>true</reuseForks>
 					<argLine>@{argLine} -Dspring.profiles.active=test -Djdk.attach.allowAttachSelf=true -XX:+EnableDynamicAgentLoading</argLine>
 				</configuration>
 			</plugin>
