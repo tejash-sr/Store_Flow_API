@@ -12,6 +12,7 @@ import com.storeflow.storeflow_api.exception.InsufficientStockException;
 import com.storeflow.storeflow_api.exception.ResourceNotFoundException;
 import com.storeflow.storeflow_api.repository.OrderRepository;
 import com.storeflow.storeflow_api.repository.ProductRepository;
+import com.storeflow.storeflow_api.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +40,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final StoreRepository storeRepository;
 
     @Override
     public OrderResponse placeOrder(OrderRequest request) {
@@ -52,9 +54,17 @@ public class OrderServiceImpl implements OrderService {
             currentUser = userRepository.findByEmailIgnoreCase(email).orElse(null);
         }
 
-        // Create order (no Store entity per spec)
+        // Get a store for the order (use first active store, or any store if none active)
+        com.storeflow.storeflow_api.entity.Store store = storeRepository.findAll().stream()
+            .filter(com.storeflow.storeflow_api.entity.Store::getIsActive)
+            .findFirst()
+            .orElseGet(() -> storeRepository.findAll().stream().findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("No store available to create order")));
+
+        // Create order
         Order order = Order.builder()
             .orderNumber(generateOrderNumber())
+            .store(store)
             .customer(currentUser)
             .customerName(currentUser != null ? currentUser.getFullName() : null)
             .customerEmail(currentUser != null ? currentUser.getEmail() : null)
