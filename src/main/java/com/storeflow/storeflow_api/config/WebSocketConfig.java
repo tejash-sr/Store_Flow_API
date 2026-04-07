@@ -1,5 +1,7 @@
 package com.storeflow.storeflow_api.config;
 
+import com.storeflow.storeflow_api.security.WebSocketAuthInterceptor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -25,7 +27,10 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
  */
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    private final WebSocketAuthInterceptor webSocketAuthInterceptor;
 
     /**
      * Configure STOMP endpoints for WebSocket connections.
@@ -41,6 +46,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry
             .addEndpoint("/ws/alerts")
+            .addInterceptors(webSocketAuthInterceptor)
             .setAllowedOrigins("http://localhost", "http://localhost:*", "http://localhost:3000")
             .setHandshakeHandler(new DefaultHandshakeHandler())
             .withSockJS()

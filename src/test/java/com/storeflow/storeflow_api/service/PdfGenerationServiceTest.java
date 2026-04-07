@@ -77,7 +77,6 @@ class PdfGenerationServiceTest {
         testOrder = Order.builder()
             .id(1L)
             .orderNumber("ORD-ABC123")
-            .store(store)
             .customerName("John Doe")
             .customerEmail("john@example.com")
             .customerPhone("555-1234")

@@ -54,7 +54,6 @@ class OrderRepositoryTest {
 
         testOrder = Order.builder()
             .orderNumber("ORD-001")
-            .store(store)
             .customerName("John Doe")
             .customerEmail("john@example.com")
             .customerPhone("5551234567")
@@ -99,7 +98,6 @@ class OrderRepositoryTest {
         orderRepository.save(testOrder);
         Order shipped = Order.builder()
             .orderNumber("ORD-002")
-            .store(store)
             .customerName("Jane Doe")
             .status(Order.OrderStatus.SHIPPED)
             .total(BigDecimal.valueOf(200.00))
@@ -115,7 +113,6 @@ class OrderRepositoryTest {
         orderRepository.save(testOrder);
         orderRepository.save(Order.builder()
             .orderNumber("ORD-003")
-            .store(store)
             .status(Order.OrderStatus.PENDING)
             .total(BigDecimal.ZERO)
             .build());

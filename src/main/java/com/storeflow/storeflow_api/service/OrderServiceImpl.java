@@ -8,10 +8,10 @@ import com.storeflow.storeflow_api.entity.Order;
 import com.storeflow.storeflow_api.entity.Order.OrderStatus;
 import com.storeflow.storeflow_api.entity.OrderItem;
 import com.storeflow.storeflow_api.entity.Product;
-import com.storeflow.storeflow_api.entity.Store;
+import com.storeflow.storeflow_api.exception.InsufficientStockException;
+import com.storeflow.storeflow_api.exception.ResourceNotFoundException;
 import com.storeflow.storeflow_api.repository.OrderRepository;
 import com.storeflow.storeflow_api.repository.ProductRepository;
-import com.storeflow.storeflow_api.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +38,6 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
-    private final StoreRepository storeRepository;
     private final UserRepository userRepository;
 
     @Override
@@ -53,19 +52,9 @@ public class OrderServiceImpl implements OrderService {
             currentUser = userRepository.findByEmailIgnoreCase(email).orElse(null);
         }
 
-        // Get default store for order (TODO: support store selection in Phase 4)
-        Store store = storeRepository.findAll().isEmpty()
-            ? null
-            : storeRepository.findAll().get(0);
-
-        if (store == null) {
-            throw new IllegalArgumentException("No store found");
-        }
-
-        // Create order
+        // Create order (no Store entity per spec)
         Order order = Order.builder()
             .orderNumber(generateOrderNumber())
-            .store(store)
             .customer(currentUser)
             .customerName(currentUser != null ? currentUser.getFullName() : null)
             .customerEmail(currentUser != null ? currentUser.getEmail() : null)
@@ -82,7 +71,7 @@ public class OrderServiceImpl implements OrderService {
 
         for (OrderItemRequest itemRequest : request.getItems()) {
             Product product = productRepository.findById(itemRequest.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + itemRequest.getProductId()));
 
             // Create order item with price snapshot
             BigDecimal itemSubtotal = product.getPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
@@ -133,22 +122,23 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse updateOrderStatus(Long id, String newStatusStr) {
         Order order = orderRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
 
+        OrderStatus newStatus;
         try {
-            OrderStatus newStatus = OrderStatus.valueOf(newStatusStr.toUpperCase());
-            
-            // Validate status transition
-            if (!isValidTransition(order.getStatus(), newStatus)) {
-                throw new IllegalArgumentException("Invalid status transition from " + order.getStatus() + " to " + newStatus);
-            }
-
-            order.setStatus(newStatus);
-            Order updated = orderRepository.save(order);
-            return toResponse(updated);
+            newStatus = OrderStatus.valueOf(newStatusStr.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status: " + newStatusStr);
+            throw new IllegalArgumentException("Unknown order status: " + newStatusStr);
         }
+        
+        // Validate status transition
+        if (!isValidTransition(order.getStatus(), newStatus)) {
+            throw new IllegalArgumentException("Cannot transition order from " + order.getStatus() + " to " + newStatus);
+        }
+
+        order.setStatus(newStatus);
+        Order updated = orderRepository.save(order);
+        return toResponse(updated);
     }
 
     private void validateOrder(OrderRequest request) {
@@ -159,7 +149,7 @@ public class OrderServiceImpl implements OrderService {
         // First pass: validate all items and check stock availability
         for (OrderItemRequest item : request.getItems()) {
             Product product = productRepository.findById(item.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + item.getProductId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + item.getProductId()));
 
             if (item.getQuantity() <= 0) {
                 throw new IllegalArgumentException("Quantity must be positive");
@@ -167,8 +157,8 @@ public class OrderServiceImpl implements OrderService {
 
             // Check stock availability BEFORE placing order
             if (product.getStockQuantity() == null ||  product.getStockQuantity() < item.getQuantity()) {
-                throw new IllegalArgumentException("Insufficient stock for product: " + product.getName() + 
-                    ". Requested: " + item.getQuantity() + ", Available: " + 
+                throw new InsufficientStockException("Insufficient stock for '" + product.getName() + 
+                    "'. Requested: " + item.getQuantity() + ", Available: " + 
                     (product.getStockQuantity() != null ? product.getStockQuantity() : 0));
             }
         }
@@ -176,7 +166,7 @@ public class OrderServiceImpl implements OrderService {
         // Second pass: atomically deduct stock for all items
         for (OrderItemRequest item : request.getItems()) {
             Product product = productRepository.findById(item.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + item.getProductId()));
             
             // Deduct stock atomically within transaction
             product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
