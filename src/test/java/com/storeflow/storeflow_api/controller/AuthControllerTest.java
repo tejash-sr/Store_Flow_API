@@ -213,7 +213,7 @@ public class AuthControllerTest {
     @DisplayName("GET /api/auth/me without JWT token returns 401 UNAUTHORIZED")
     void getMe_withoutJwt_returns401() throws Exception {
         mockMvc.perform(get("/api/auth/me"))
-            .andExpect(status().isForbidden());
+            .andExpect(status().isUnauthorized());
     }
 
     @Test
