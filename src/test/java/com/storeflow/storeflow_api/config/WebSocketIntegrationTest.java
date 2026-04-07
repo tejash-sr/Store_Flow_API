@@ -1,6 +1,5 @@
 package com.storeflow.storeflow_api.config;
 
-import com.storeflow.storeflow_api.security.WebSocketAuthInterceptor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -40,8 +39,7 @@ public class WebSocketIntegrationTest {
     @Test
     @DisplayName("Should implement WebSocketMessageBrokerConfigurer interface")
     public void testWebSocketConfigImplementsInterface() {
-        WebSocketAuthInterceptor mockInterceptor = mock(WebSocketAuthInterceptor.class);
-        WebSocketConfig config = new WebSocketConfig(mockInterceptor);
+        WebSocketConfig config = new WebSocketConfig();
         
         assertThat(config).isNotNull();
         assertThat(config).isInstanceOf(org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer.class);
@@ -53,8 +51,7 @@ public class WebSocketIntegrationTest {
     @Test
     @DisplayName("Should have registerStompEndpoints method that accepts StompEndpointRegistry")
     public void testStompEndpointConfigurationMethodExists() {
-        WebSocketAuthInterceptor mockInterceptor = mock(WebSocketAuthInterceptor.class);
-        WebSocketConfig config = new WebSocketConfig(mockInterceptor);
+        WebSocketConfig config = new WebSocketConfig();
         StompEndpointRegistry registry = mock(StompEndpointRegistry.class);
         
         // Method exists and should not throw exception
@@ -75,8 +72,7 @@ public class WebSocketIntegrationTest {
     @Test
     @DisplayName("Should have configureMessageBroker method that accepts MessageBrokerRegistry")
     public void testMessageBrokerConfigurationMethodExists() {
-        WebSocketAuthInterceptor mockInterceptor = mock(WebSocketAuthInterceptor.class);
-        WebSocketConfig config = new WebSocketConfig(mockInterceptor);
+        WebSocketConfig config = new WebSocketConfig();
         
         try {
             // Testing that the method exists

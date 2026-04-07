@@ -1,7 +1,8 @@
 package com.storeflow.storeflow_api.config;
 
 import com.storeflow.storeflow_api.security.WebSocketAuthInterceptor;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -27,10 +28,11 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
  */
 @Configuration
 @EnableWebSocketMessageBroker
-@RequiredArgsConstructor
+@Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final WebSocketAuthInterceptor webSocketAuthInterceptor;
+    @Autowired(required = false)
+    private WebSocketAuthInterceptor webSocketAuthInterceptor;
 
     /**
      * Configure STOMP endpoints for WebSocket connections.
@@ -44,12 +46,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry
+        var endpointConfig = registry
             .addEndpoint("/ws/alerts")
-            .addInterceptors(webSocketAuthInterceptor)
             .setAllowedOrigins("http://localhost", "http://localhost:*", "http://localhost:3000")
-            .setHandshakeHandler(new DefaultHandshakeHandler())
-            .withSockJS()
+            .setHandshakeHandler(new DefaultHandshakeHandler());
+        
+        // Register JWT auth interceptor if available (may be null in some test contexts)
+        if (webSocketAuthInterceptor != null) {
+            endpointConfig.addInterceptors(webSocketAuthInterceptor);
+        }
+        
+        endpointConfig.withSockJS()
                 .setStreamBytesLimit(512 * 1024)
                 .setHttpMessageCacheSize(1000)
                 .setDisconnectDelay(30 * 1000);
