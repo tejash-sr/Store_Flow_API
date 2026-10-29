@@ -2,9 +2,10 @@
 
 # DuckDNS Update Script
 # Updates storeflowapi.duckdns.org to point to current public IP
+# Usage: DUCKDNS_TOKEN=<your-token> ./update-duckdns.sh
 
 DOMAIN="storeflowapi"
-TOKEN="3e45e77c-d879-4bc5-a831-300ac6a8dbfb"
+TOKEN="${DUCKDNS_TOKEN:?Set DUCKDNS_TOKEN in the environment before running}"
 UPDATE_URL="https://www.duckdns.org/update?domains=${DOMAIN}&token=${TOKEN}&ip="
 
 # Get current public IP
