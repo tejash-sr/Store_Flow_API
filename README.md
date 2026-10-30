@@ -1,8 +1,8 @@
 # StoreFlow API
 
-A production-ready, enterprise-grade e-commerce API built with Spring Boot 3.2.3, featuring GraphQL, async job processing, comprehensive API documentation, and 250+ passing tests.
+A production-ready, enterprise-grade e-commerce API built with Spring Boot 3.2.3, featuring GraphQL, async job processing, comprehensive API documentation, and 110+ automated tests.
 
-**Version:** v0.9.0 | **Build Status:** ✅ All 250 Tests Passing | **Code Coverage:** JaCoCo Enforced
+**Version:** v0.9.0 | **Build Status:** ✅ 110+ tests, run on every push via GitHub Actions | **Code Coverage:** JaCoCo Enforced
 
 ## 🚀 Quick Start
 
@@ -89,7 +89,7 @@ src/main/resources/
 ├── graphql/schema.graphqls
 └── application.yml
 
-src/test/java/          → 250+ unit & integration tests
+src/test/java/          → 110+ unit & integration tests
 ```
 
 **Key Dependencies:**
@@ -107,7 +107,7 @@ src/test/java/          → 250+ unit & integration tests
 ## 🧪 Testing
 
 ```bash
-# Run all tests (250+)
+# Run all tests (110+)
 mvn clean test
 
 # Run specific test class

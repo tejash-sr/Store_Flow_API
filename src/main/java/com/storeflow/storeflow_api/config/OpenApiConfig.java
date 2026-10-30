@@ -4,7 +4,6 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
@@ -49,10 +48,7 @@ public class OpenApiConfig {
                         .contact(new Contact()
                                 .name("StoreFlow Team")
                                 .email("support@storeflow.local")
-                                .url("https://github.com/tejash-sr/StoreFlowAPI"))
-                        .license(new License()
-                                .name("Internal Use - Grootan Technologies")
-                                .url("https://www.grootan.com")))
+                                .url("https://github.com/tejash-sr/Store_Flow_API")))
                 .servers(Arrays.asList(
                         new Server()
                                 .url("http://localhost:8080")
